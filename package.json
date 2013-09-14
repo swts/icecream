@@ -5,6 +5,7 @@
 	"keywords": ["future", "web", "framework", "sweets", "projects"],
 	"author": "Yaroslav Kravchenko",
 	"preferGlobal": false,
+	"license" : "GPLv3",
 	"dependencies": {
 		"async":	"0.2.7",
 		"units": 	"~0.0.1",
