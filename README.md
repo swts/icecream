@@ -19,7 +19,7 @@ Next Web builder toolkit
 	date: 1262341787,
 	order: ["0", "1", "2", "3"],				// items' slugs
 	items: {
-			0": {
+			0: {
 				type: "image",
 				content: {
 					src: "/path/to/image"
