@@ -10,39 +10,39 @@ Next Web builder toolkit
 
 ```js
 {
-	"slug": "item slug",
-	"title": {
-		"ru": "Ru title",
-		"en": "En title"
+	slug: "item slug",
+	title: {
+		ru: "Ru title",
+		en: "En title"
 	},
-	"categories": ["public", "starred"],		// array of trees/categories items
-	"date": 1262341787,
-	"order": ["0", "1", "2", "3"],				// items' slugs
-	"items": {
-			"0": {
-				"type": "image",
-				"content": {
-					"src": "/path/to/image"
+	categories: ["public", "starred"],		// array of trees/categories items
+	date: 1262341787,
+	order: ["0", "1", "2", "3"],				// items' slugs
+	items: {
+			0": {
+				type: "image",
+				content: {
+					src: "/path/to/image"
 				}
 			},
-			"1": {
-				"type": "text",
-				"content": {
-					"ru": "Ru text",
-					"en": "En text"
+			1: {
+				type: "text",
+				content: {
+					ru: "Ru text",
+					en: "En text"
 				}
 			},
-			"3": {
-				"type": "headline",
-				"content": {
-					"ru": "Ru headline",
-					"en": "En headline"
+			3: {
+				type: "headline",
+				content: {
+					ru: "Ru headline",
+					en: "En headline"
 				}
 			}
 	},
-	"preview": "/path/to/preview/image",
-	"publish_date": 1262341787,
-	"status": "published"						// "draft" and "published" are currently supported, "draft" projects are not available 
+	preview: "/path/to/preview/image",
+	publish_date: 1262341787,
+	status: "published"						// "draft" and "published" are currently supported, "draft" projects are not available 
 }
 ```
 
@@ -69,7 +69,7 @@ There are two resources: /project and /project/item - the second one is a wrappe
 
 #### DELETE
 ```js
-{"slug": "slug"}
+{slug: "slug"}
 ```
 
 ## Tags
