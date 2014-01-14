@@ -17,7 +17,7 @@ Next Web builder toolkit
 	},
 	categories: ["public", "starred"],		// array of trees/categories items
 	date: 1262341787,
-	order: ["0", "1", "2", "3"],				// items' slugs
+	order: ["0", "1", "2", "3"],			// items' slugs
 	items: {
 			0: {
 				type: "image",
@@ -48,7 +48,7 @@ Next Web builder toolkit
 	},
 	preview: "/path/to/preview/image",
 	publish_date: 1262341787,
-	status: "published"						// "draft" and "published" are currently supported, "draft" projects are not available 
+	status: "published"				// "draft" and "published" are currently supported, "draft" projects are not available for unauthorized users
 }
 ```
 
