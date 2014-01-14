@@ -47,7 +47,7 @@ Next Web builder toolkit
 ```
 
 ## API
-There are two resources: /project and /project/item - the second one is a wrapper to access project items - slugs for the look like "project slug"/"item slug". Get and Update requests return resource objects, which are described below. Request objects for both resources are similar:
+There are two resources: /project and /project/item - the second one is a wrapper to access project items - slugs for it look like "project slug"/"item slug". Get request returns resource objects, which are described below, and is only available for /project resource. Other request objects for both resources are similar:
 
 #### GET
 ```js
