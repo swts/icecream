@@ -38,6 +38,12 @@ Next Web builder toolkit
 					ru: "Ru headline",
 					en: "En headline"
 				}
+			},
+			4: {
+				type: "embedded",
+				content: {
+					html: "embedded html"
+				}
 			}
 	},
 	preview: "/path/to/preview/image",
