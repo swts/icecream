@@ -2,11 +2,11 @@
 Next Web builder toolkit
 
 ## Icecream
-**Sweet for portfolio projects**
+**Sweet for posts**
 
 ## Object structure
 
-### "projects" table
+### "posts" table
 
 ```js
 {
@@ -18,7 +18,7 @@ Next Web builder toolkit
 	categories: ["public", "starred"],		// array of trees/categories items
 	date: 1262341787,
 	order: ["0", "1", "2", "3"],			// items' slugs
-	items: {
+	content: {
 			0: {
 				type: "image",
 				content: {
@@ -53,7 +53,7 @@ Next Web builder toolkit
 ```
 
 ## API
-There are two resources: /project and /project/item - the second one is a wrapper to access project items - slugs for it look like "project slug"/"item slug". Get request returns resource objects, which are described below, and is only available for /project resource. Other request objects for both resources are similar:
+There are two resources: /post and /post/content - the second one is a wrapper to access project items - slugs for it look like "project slug"/"item slug". Get request returns resource objects, which are described below, and is only available for /project resource. Other request objects for both resources are similar:
 
 #### GET
 ```js
