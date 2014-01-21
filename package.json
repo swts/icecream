@@ -11,7 +11,8 @@
 		"units": 	"~0.0.1",
 		"uch": 		"~0.0.1",
 
-		"sweets-valid": "~0.0.1"
+		"sweets-valid": "~0.0.1",
+		"apis-return": "~0.0.1"
 	},
 	"engines": {
 		"node": "~0.10.15"
