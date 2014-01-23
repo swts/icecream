@@ -21,8 +21,5 @@
 		"type": "git",
 		"url": "git@github.com:swts/icecream.git"
 	},
-	"directories": {
-		"lib": "./lib"
-	},
-	"main": "./lib/index"
+	"main": "./index"
 }

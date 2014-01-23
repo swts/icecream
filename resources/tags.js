@@ -7,9 +7,12 @@ var Tags = function () {};
 inherits(Tags, Unit);
 
 Tags.prototype.unitInit = function (units) {
-	var ctrl = units.require('post.controller');
 	var env = units.require('core.template');
-	env.addExtension('Posts', new Posts(env, ctrl));
+
+	if(env && env.addExtension) {
+		var ctrl = units.require('post.controller');
+		env.addExtension('Posts', new Posts(env, ctrl));
+	}
 };
 
 
