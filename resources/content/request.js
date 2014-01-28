@@ -12,7 +12,7 @@ module.exports = {
 			validator = v.content;
 		}
 
-		v.basedOn(validator, {slug: v.path});
+		validator = v.basedOn(validator, {slug: v.path});
 		return validator;
 	},
 
