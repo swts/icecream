@@ -22,7 +22,7 @@ Post.prototype.get = function(auth, slug, cb) {
 
 	if(!auth) {
 		query.filter = function(row) {
-			row('status').eq("published");
+			return row('status').eq("published");
 		};
 	}
 

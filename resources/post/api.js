@@ -14,9 +14,11 @@ Post.prototype.unitInit = function (units) {
 
 Post.prototype.get = function (auth, data, cb) {
 	if (data.slug) {
-		this.ctrl.get(auth, data.slug, returnHandler("NotFound", cb));
+		console.log(auth && auth.identity);
+		this.ctrl.get(auth && auth.identity, data.slug, returnHandler("NotFound", cb));
 	} else if (data.category) {
-		this.ctrl.getByCategory(data.category, auth && true, data.withContent, cb);
+		console.log(auth && auth.identity);
+		this.ctrl.getByCategory(data.category, auth && auth.identity, data.withContent, returnHandler("NotFound", cb));
 	}
 };
 
