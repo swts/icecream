@@ -12,7 +12,12 @@ Post.prototype.unitInit = function (units) {
 	this.db = units.require('db');
 };
 
-Post.prototype.get = function(slug, showDraft, cb) {
+Post.prototype.get = function(slug, options, cb) {
+	if(cb === undefined) {
+		cb = options;
+		options = {};
+	}
+
 	var self = this,
 		query = {
 			box: this.box,
@@ -20,9 +25,9 @@ Post.prototype.get = function(slug, showDraft, cb) {
 			index: "slug"
 		};
 
-	if(!showDraft) {
+	if(options.status !== undefined) {
 		query.filter = function(row) {
-			return row('status').eq("published");
+			return row('status').eq(options.status);
 		};
 	}
 
@@ -39,6 +44,11 @@ Post.prototype.get = function(slug, showDraft, cb) {
 };
 
 Post.prototype.getByCategory = function(category, options, cb) {
+	if(cb === undefined) {
+		cb = options;
+		options = {};
+	}
+
 	var filter,
 		post = [{ orderBy: this.db.r.desc('date') }];
 
@@ -47,9 +57,9 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	}
 
 	if (category !== "all" && category !== undefined) {
-		if(!options.showDraft) {
+		if(options.status) {
 			filter = function(row) {
-				return row('categories').contains(category).and(row('status').eq("published"));
+				return row('categories').contains(category).and(row('status').eq(options.status));
 			};
 		} else {
 			filter = function(row) {
@@ -57,9 +67,9 @@ Post.prototype.getByCategory = function(category, options, cb) {
 			};
 		}
 	} else {
-		if (!options.showDraft) {
+		if (options.status) {
 			filter = function(row) {
-				return row('status').eq("published");
+				return row('status').eq(options.status);
 			};
 		}
 	}

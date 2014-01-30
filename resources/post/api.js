@@ -13,15 +13,17 @@ Post.prototype.unitInit = function (units) {
 };
 
 Post.prototype.get = function (auth, data, cb) {
-	var showDraft = auth && auth.identity;
+	var options = {};
+
+	if(!(auth && auth.identity)) {
+		options.status = "published";
+	}
 
 	if (data.slug) {
-		this.ctrl.get(data.slug, showDraft, returnHandler("NotFound", cb));
+		this.ctrl.get(data.slug, options, returnHandler("NotFound", cb));
 	} else if (data.category) {
-		this.ctrl.getByCategory(data.category, {
-			showDraft: showDraft,
-			withContent: data.withContent
-		}, returnHandler("NotFound", cb));
+		options.withContent = data.withContent;
+		this.ctrl.getByCategory(data.category, options, returnHandler("NotFound", cb));
 	}
 };
 
