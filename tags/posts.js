@@ -17,19 +17,15 @@ Posts.prototype.render = function(context, slug, cb) {
 	var self = this,
 		callback = function(err, result) {
 			if(err) {
-				console.error(err);
 				cb(null);
 			} else {
 				self.env.render("posts/posts.html", {posts: result, LANGUAGE: context.ctx.LANGUAGE}, cb);
 			}
 		};
 
-	if (slug === "starred") {
-		this.ctrl.getStarredPosts(callback);
-	} else {
-		this.ctrl.getPostsByCategory(slug, callback);
-	}
-
+	this.ctrl.getPostsByCategory(slug, {
+		withContent: true
+	}, callback);
 };
 
 

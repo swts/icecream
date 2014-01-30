@@ -13,10 +13,15 @@ Post.prototype.unitInit = function (units) {
 };
 
 Post.prototype.get = function (auth, data, cb) {
+	var showDraft = auth && auth.identity;
+
 	if (data.slug) {
-		this.ctrl.get(auth && auth.identity, data.slug, returnHandler("NotFound", cb));
+		this.ctrl.get(data.slug, showDraft, returnHandler("NotFound", cb));
 	} else if (data.category) {
-		this.ctrl.getByCategory(data.category, auth && auth.identity, data.withContent, returnHandler("NotFound", cb));
+		this.ctrl.getByCategory(data.category, {
+			showDraft: showDraft,
+			withContent: data.withContent
+		}, returnHandler("NotFound", cb));
 	}
 };
 

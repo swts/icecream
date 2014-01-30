@@ -12,7 +12,7 @@ Post.prototype.unitInit = function (units) {
 	this.db = units.require('db');
 };
 
-Post.prototype.get = function(auth, slug, cb) {
+Post.prototype.get = function(slug, showDraft, cb) {
 	var self = this,
 		query = {
 			box: this.box,
@@ -20,7 +20,7 @@ Post.prototype.get = function(auth, slug, cb) {
 			index: "slug"
 		};
 
-	if(!auth) {
+	if(!showDraft) {
 		query.filter = function(row) {
 			return row('status').eq("published");
 		};
@@ -38,16 +38,16 @@ Post.prototype.get = function(auth, slug, cb) {
 	);
 };
 
-Post.prototype.getByCategory = function(category, auth, withContent, cb) {
+Post.prototype.getByCategory = function(category, options, cb) {
 	var filter,
 		post = [{ orderBy: this.db.r.desc('date') }];
 
-	if(!withContent) {
+	if(!options.withContent) {
 		post.push({without: ['content']});
 	}
 
 	if (category !== "all" && category !== undefined) {
-		if(!auth) {
+		if(!options.showDraft) {
 			filter = function(row) {
 				return row('categories').contains(category).and(row('status').eq("published"));
 			};
@@ -57,7 +57,7 @@ Post.prototype.getByCategory = function(category, auth, withContent, cb) {
 			};
 		}
 	} else {
-		if (!auth) {
+		if (!options.showDraft) {
 			filter = function(row) {
 				return row('status').eq("published");
 			};
