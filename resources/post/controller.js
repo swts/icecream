@@ -19,6 +19,7 @@ Post.prototype.get = function(slug, options, cb) {
 	}
 
 	var self = this,
+		now = Date.now()/1000,
 		query = {
 			box: this.box,
 			get: slug,
@@ -27,7 +28,7 @@ Post.prototype.get = function(slug, options, cb) {
 
 	if(options.status !== undefined) {
 		query.filter = function(row) {
-			return row('status').eq(options.status).and(self.db.r.epochTime(row("publish_date")).le(self.db.r.now()));
+			return row('status').eq(options.status).and(row("publish_date").le(now));
 		};
 	}
 
@@ -51,6 +52,7 @@ Post.prototype.getByCategory = function(category, options, cb) {
 
 	var self = this,
 		filter,
+		now = Date.now()/1000,
 		post = [{ orderBy: this.db.r.desc('date') }];
 
 	if(!options.withContent) {
@@ -60,7 +62,7 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	if (category !== "all" && category !== undefined) {
 		if(options.status) {
 			filter = function(row) {
-				return row('categories').contains(category).and(row('status').eq(options.status)).and(self.db.r.epochTime(row("publish_date")).le(self.db.r.now()));
+				return row('categories').contains(category).and(row('status').eq(options.status)).and(row("publish_date").le(now));
 			};
 		} else {
 			filter = function(row) {
@@ -70,7 +72,7 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	} else {
 		if (options.status) {
 			filter = function(row) {
-				return row('status').eq(options.status).and(self.db.r.epochTime(row("publish_date")).le(self.db.r.now()));
+				return row('status').eq(options.status).and(row("publish_date").le(now));
 			};
 		}
 	}
