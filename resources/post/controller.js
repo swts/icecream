@@ -4,9 +4,10 @@ var Unit = require('units').Unit;
 
 var Post = function () {
 	this.db = null;
-	this.box = "posts";
 };
 inherits(Post, Unit);
+
+Post.prototype.box = "posts";
 
 Post.prototype.unitInit = function (units) {
 	this.db = units.require('db');
