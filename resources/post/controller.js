@@ -10,7 +10,13 @@ inherits(Post, Unit);
 Post.prototype.box = "posts";
 
 Post.prototype.unitInit = function (units) {
+	var categories = units.require("core.settings").categories;
+
 	this.db = units.require('db');
+	
+	if (categories) {
+		this.categories = categories[this.box];
+	}
 };
 
 Post.prototype.get = function(slug, options, cb) {
@@ -25,7 +31,10 @@ Post.prototype.get = function(slug, options, cb) {
 			box: this.box,
 			get: slug,
 			index: "slug"
-		};
+		},
+		ql = [
+			{nth: 0}
+		];
 
 	if(options.status !== undefined) {
 		query.filter = function(row) {
@@ -33,16 +42,11 @@ Post.prototype.get = function(slug, options, cb) {
 		};
 	}
 
-	self.db.joinTree(query, {
-			to: "categories",
-			from: "trees",
-			fromSlug: "categories",
-			fromProperty: "items"
-		}, [
-			{nth: 0}
-		],
-		cb
-	);
+	if (this.categories) {
+		self.db.joinTree(query, this.categories, ql, cb);
+	} else {
+		self.db.query(query, ql, cb);
+	}
 };
 
 Post.prototype.getByCategory = function(category, options, cb) {
@@ -54,10 +58,16 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	var self = this,
 		filter,
 		now = Date.now()/1000,
-		post = [{ orderBy: this.db.r.desc('date') }];
+		query = {
+			box: this.box
+		},
+		ql = [{ orderBy: this.db.r.desc('date') }],
+		callback = function(err, result) {
+			result.toArray(cb);
+		};
 
 	if(!options.withContent) {
-		post.push({without: ['content']});
+		ql.push({without: ['content']});
 	}
 
 	if (category !== "all" && category !== undefined) {
@@ -78,19 +88,14 @@ Post.prototype.getByCategory = function(category, options, cb) {
 		}
 	}
 
-	this.db.joinTree({
-			box: this.box,
-			filter: filter
-		}, {
-			to: "categories",
-			from: "trees",
-			fromSlug: "categories",
-			fromProperty: "items"
-		},
-		post,
-		function(err, result) {
-			result.toArray(cb);
-	});
+	query.filer = filter;
+
+	if (this.categories) {
+		this.db.joinTree(query, this.categories, ql, callback);
+	} else {
+		this.db.query(query, ql, callback);
+	}
+	
 };
 
 Post.prototype.create = function (post, cb) {
