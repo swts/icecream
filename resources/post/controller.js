@@ -88,7 +88,7 @@ Post.prototype.getByCategory = function(category, options, cb) {
 		}
 	}
 
-	query.filer = filter;
+	query.filter = filter;
 
 	if (this.categories) {
 		this.db.joinTree(query, this.categories, ql, callback);
