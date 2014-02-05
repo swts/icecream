@@ -23,7 +23,8 @@ Posts.prototype.render = function(context, slug, cb) {
 			}
 		};
 
-	this.ctrl.getPostsByCategory(slug, {
+	this.ctrl.getByCategory(slug, {
+		status: "published",
 		withContent: true
 	}, callback);
 };
