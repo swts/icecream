@@ -6,8 +6,17 @@ var translate = valid.translate;
 
 var status = v.oneOf("draft", "ready", "published");
 var contentType = v.oneOf("text", "headline", "image", "vimeo", "embedded");
-var contentImage = { src: v.str};
-var contentVimeo = { id: v.posInt};
+var contentImage = { src: v.str };
+var contentVimeo = {
+	id: v.posInt,
+	width: v.posInt,
+	height: v.posInt,
+	title: v.opt(v.str),
+	duration: v.opt(v.idx),
+	thumbnailS: v.opt(v.url),
+	thumbnailM: v.opt(v.url),
+	thumbnailL: v.opt(v.url),
+};
 
 var content = {
 	type: contentType,
@@ -23,6 +32,7 @@ var translateContent = function(languages) {
 		type: contentType,
 		content: v.or(
 			translate(v.str, languages),
+			v.str,
 			contentImage,
 			contentVimeo
 		)
