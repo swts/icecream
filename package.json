@@ -1,7 +1,7 @@
 {
 	"name": "sweets-icecream",
-	"version": "0.2.1",
-	"description": "Sweets's categories and projects",
+	"version": "0.3.0",
+	"description": "Sweets's posts",
 	"keywords": ["future", "web", "framework", "sweets", "projects"],
 	"author": "Yaroslav Kravchenko",
 	"preferGlobal": false,
@@ -9,9 +9,9 @@
 	"dependencies": {
 		"async":	"~0.2.7",
 		"units": 	"~0.0.1",
-		"uch": 		"~0.0.1",
 
 		"sweets-valid": "~0.0.1",
+		"sweets-caramel": "~0.3.0",
 		"apis-return": "~0.0.1"
 	},
 	"engines": {

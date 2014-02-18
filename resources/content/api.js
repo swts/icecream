@@ -17,15 +17,12 @@ Content.prototype.create = function (auth, data, cb) {
 };
 
 Content.prototype.update = function (auth, data, cb) {
-	if(data.to.slug) {
-		this.ctrl.renameContent(data.slug, data.to.slug, returnHandler("BadRequest", cb));
-	} else {
-		this.ctrl.updateContent(data.slug, data.to, returnHandler("BadRequest", cb));
-	}
+	this.ctrl.updateContent(data.id, data.to, returnHandler("BadRequest", cb));
 };
 
 Content.prototype.del = function (auth, data, cb) {
-	this.ctrl.removeContent(data.slug, returnHandler("NotFound", cb));
+	console.log(data);
+	this.ctrl.removeContent(data.slug, data.id, returnHandler("NotFound", cb));
 };
 
 

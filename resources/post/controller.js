@@ -13,6 +13,7 @@ Post.prototype.unitInit = function (units) {
 	var categories = units.require("core.settings").categories;
 
 	this.db = units.require('db');
+	this.nodeCtrl = units.require('resources.node.controller');
 	
 	if (categories) {
 		this.categories = categories[this.box];
@@ -33,6 +34,13 @@ Post.prototype.get = function(slug, options, cb) {
 			index: "slug"
 		},
 		ql = [
+			{map: function(post) {
+				return post.merge({
+					content: post("nodes").map(function(id) {
+						return self.db.r.table(self.nodeCtrl.box).get(id);
+					})
+				});
+			}},
 			{nth: 0}
 		];
 
@@ -66,8 +74,14 @@ Post.prototype.getByCategory = function(category, options, cb) {
 			result.toArray(cb);
 		};
 
-	if(!options.withContent) {
-		ql.push({without: ['content']});
+	if(options.withContent) {
+		ql.unshift({map: function(post) {
+			return post.merge({
+				content: post("nodes").map(function(id) {
+					return self.db.r.table(self.nodeCtrl.box).get(id);
+				})
+			});
+		}});
 	}
 
 	if (category !== "all" && category !== undefined) {
@@ -110,26 +124,55 @@ Post.prototype.remove = function (slug, cb) {
 	this.db.remove(this.box, slug, cb);
 };
 
-Post.prototype.createContent = function (item, cb) {
-	var path = this.db.getPath(item.slug, "content");
+Post.prototype.createContent = function (data, cb) {
+	var self = this;
 
-	delete item.slug;
-	this.db.insert(this.box, path, item, cb);
+	this.nodeCtrl.create(data.content, function(err, result) {
+		if (err) {
+			cb(err, null);
+		} else {
+			var id = result.generated_keys[0];
+
+			self.db.query({
+				box: self.box,
+				get: data.slug,
+				index: "slug"
+			},[{
+				replace: function(row) {
+					if (data.index) {
+						return row.merge({nodes: row("nodes").insertAt(data.index, id)});
+					} else {
+						return row.merge({nodes: row("nodes").append(id)});
+					}
+				}
+			}], cb);
+		}
+	});
 };
 
-Post.prototype.updateContent = function (item, data, cb) {
-	var path = this.db.getPath(item, "content");
-	this.db.update(this.box, path, data, cb);
+Post.prototype.updateContent = function (id, to, cb) {
+	this.nodeCtrl.update(id, to, cb);
 };
 
-Post.prototype.renameContent = function(item, newName, cb) {
-	var path = this.db.getPath(item, "content");
-	this.db.rename(this.box, path, newName, cb);
-};
+Post.prototype.removeContent = function (slug, id, cb) {
+	var self = this;
 
-Post.prototype.removeContent = function (item, cb) {
-	var path = this.db.getPath(item, "content");
-	this.db.remove(this.box, path, cb);
+	this.nodeCtrl.remove(id, function(err, result) {
+		if (err) {
+			cb(err, null);
+		} else {
+			self.db.query({
+				box: self.box,
+				get: slug,
+				index: "slug"
+			},
+			[{
+				replace: function(row) {
+					return row.merge({nodes: row("nodes").setDifference([id])});
+				}
+			}], cb);
+		}
+	});
 };
 
 module.exports = Post;

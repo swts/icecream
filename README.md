@@ -17,38 +17,10 @@ Next Web builder toolkit
 	},
 	categories: ["public", "starred"],		// array of trees/categories items - optional
 	date: 1262341787,
-	order: ["0", "1", "2", "3"],			// items' slugs
-	content: {
-			0: {
-				type: "image",
-				content: {
-					src: "/path/to/image"
-				}
-			},
-			1: {
-				type: "text",
-				content: {
-					ru: "Ru text",
-					en: "En text"
-				}
-			},
-			3: {
-				type: "headline",
-				content: {
-					ru: "Ru headline",
-					en: "En headline"
-				}
-			},
-			4: {
-				type: "embedded",
-				content: {
-					html: "embedded html"
-				}
-			}
-	},
+	nodes: ["id"],							// content ids, see sweets-caramel
 	preview: "/path/to/preview/image/or/something",
-	publish_date: 1262341787,		// controller won't return unpublished project for unauthorized user
-	status: "published"				// "draft" and "published" are currently supported, "draft" posts are not available for unauthorized users
+	publish_date: 1262341787,				// controller won't return unpublished project for unauthorized user
+	status: "published"						// "draft" and "published" are currently supported, "draft" posts are not available for unauthorized users
 }
 ```
 

@@ -22,19 +22,16 @@ module.exports = {
 				"slug": v.slug,
 				"categories": [v.path],
 				"date": v.posInt,
-				"order": [v.slug],
 				"preview": v.str,
 				"publish_date": v.posInt,
-				"status": v.str
+				"nodes": v.opt([v.str]),
+				"status": v.status
 			};
 
 		if (languages) {
 			validator.title = v.translate(v.str, languages);
-			var content = v.translateContent(languages);
-			validator.content = v.dict(v.slug, content);
 		} else {
 			validator.title = v.str;
-			validator.content = v.dict(v.slug, v.content);
 		}
 
 		return validator;
@@ -48,11 +45,11 @@ module.exports = {
 					"slug": v.opt(v.slug),
 					"categories": v.opt([v.path]),
 					"date": v.opt(v.posInt),
-					"order": v.opt([v.slug]),
 					"preview": v.opt(v.str),
 					"publish_date": v.opt(v.posInt),
 					"scheme": v.opt(v.str),
-					"status": v.opt(v.str)
+					"nodes": v.opt([v.str]),
+					"status": v.opt(v.status)
 				}
 			};
 

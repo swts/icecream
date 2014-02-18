@@ -1,43 +1,25 @@
 'use strict';
-var v = require('../validators');
+var v = require('../validators'),
+	nodeValidators = require('sweets-caramel/resources/node/request');
 
 module.exports = {
 	create: function(settings) {
-		var languages = settings.languages,
-			validator;
-
-		if (languages) {
-			validator = v.translateContent(languages);
-		} else {
-			validator = v.content;
-		}
-
-		validator = v.basedOn(validator, {slug: v.path});
+		var validator = {
+			slug: v.slug,
+			index: v.opt(v.idx),
+			content: nodeValidators.create(settings)
+		};
 		return validator;
 	},
 
 	update: function(settings) {
-		var languages = settings.languages,
-			validator = {slug: v.path},
-			content;
-
-		if (languages) {
-			content = v.translateContent(languages);
-		} else {
-			content = v.content;
-		}
-
-		validator.to = {
-			type: v.opt(content.type),
-			content: v.opt(content.content)
-		};
-
-		return validator;
+		return nodeValidators.update(settings);
 	},
 
 	del: function(settings) {
 		return {
-			slug: v.path
+			slug: v.slug,
+			id: v.str
 		};
 	}
 };
