@@ -11,11 +11,11 @@ Next Web builder toolkit
 ```js
 {
 	slug: "item slug",
-	title: {
+	title: {								// translation here and further depends on Sweets app settings
 		ru: "Ru title",
 		en: "En title"
 	},
-	categories: ["public", "starred"],		// array of trees/categories items
+	categories: ["public", "starred"],		// array of trees/categories items - optional
 	date: 1262341787,
 	order: ["0", "1", "2", "3"],			// items' slugs
 	content: {
@@ -46,9 +46,21 @@ Next Web builder toolkit
 				}
 			}
 	},
-	preview: "/path/to/preview/image",
-	publish_date: 1262341787,
+	preview: "/path/to/preview/image/or/something",
+	publish_date: 1262341787,		// controller won't return unpublished project for unauthorized user
 	status: "published"				// "draft" and "published" are currently supported, "draft" posts are not available for unauthorized users
+}
+```
+
+Categories are stored as slugs from [Marshmallow](https://github.com/swts/marshmallow) and are merged on get request. To define merge entry set the following object in Sweets app settings: 
+```js
+this.categories = {
+	"posts": {
+		to: "categories",
+		from: "trees",
+		fromSlug: "categories",
+		fromProperty: "items"
+	}
 }
 ```
 
