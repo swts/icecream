@@ -1,6 +1,7 @@
 "use strict";
 var inherits = require('util').inherits;
 var Unit = require('units').Unit;
+var async = require('async');
 
 var Post = function () {
 	this.db = null;
@@ -10,11 +11,10 @@ inherits(Post, Unit);
 Post.prototype.box = "posts";
 
 Post.prototype.unitInit = function (units) {
-	var categories = units.require("core.settings").categories;
-
 	this.db = units.require('db');
 	this.nodeCtrl = units.require('resources.node.controller');
-	
+
+	var categories = units.require("core.settings").categories;
 	if (categories) {
 		this.categories = categories[this.box];
 	}
@@ -27,6 +27,7 @@ Post.prototype.get = function(slug, options, cb) {
 	}
 
 	var self = this,
+		r = this.db.r,
 		now = Date.now()/1000,
 		query = {
 			box: this.box,
@@ -34,11 +35,15 @@ Post.prototype.get = function(slug, options, cb) {
 			index: "slug"
 		},
 		ql = [
+			{exclude: "id"},
 			{map: function(post) {
 				return post.merge({
 					content: post("nodes").map(function(id) {
-						return self.db.r.table(self.nodeCtrl.box).get(id);
-					})
+						return r.expr([
+							id,
+							r.table(self.nodeCtrl.box).get(id).without("id")
+						]);
+					}).coerceTo("object")
 				});
 			}},
 			{nth: 0}
@@ -64,24 +69,32 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	}
 
 	var self = this,
+		r = this.db.r,
 		filter,
 		now = Date.now()/1000,
 		query = {
 			box: this.box
 		},
-		ql = [{ orderBy: this.db.r.desc('date') }],
+		ql = [
+			{ orderBy: this.db.r.desc('date') },
+			{ exclude: "id" }
+		],
 		callback = function(err, result) {
 			result.toArray(cb);
 		};
 
 	if(options.withContent) {
 		ql.unshift({map: function(post) {
-			return post.merge({
-				content: post("nodes").map(function(id) {
-					return self.db.r.table(self.nodeCtrl.box).get(id);
-				})
-			});
-		}});
+				return post.merge({
+					content: post("nodes").map(function(id) {
+						return r.expr([
+							id,
+							r.table(self.nodeCtrl.box).get(id).without("id")
+						]);
+					}).coerceTo("object")
+				});
+			}
+		});
 	}
 
 	if (category !== "all" && category !== undefined) {
@@ -109,11 +122,31 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	} else {
 		this.db.query(query, ql, callback);
 	}
-	
+
 };
 
 Post.prototype.create = function (post, cb) {
-	this.db.insert(this.box, post, cb);
+	var self = this;
+
+	async.waterfall([
+		function (cb) {
+			if(post.content) {
+				var nodes = post.content;
+				delete post.content;
+				self.db.insert(self.nodeCtrl.box, nodes, cb);
+			} else {
+				cb(null, {});
+			}
+		},
+
+		function (result, cb) {
+			if(result.generated_keys) {
+				post.nodes = result.generated_keys;
+			}
+
+			self.db.insert(self.box, post, cb);
+		}
+	], cb);
 };
 
 Post.prototype.update = function (slug, to, cb) {
@@ -121,13 +154,14 @@ Post.prototype.update = function (slug, to, cb) {
 };
 
 Post.prototype.remove = function (slug, cb) {
+	// remove nodes or not???
 	this.db.remove(this.box, slug, cb);
 };
 
-Post.prototype.createContent = function (data, cb) {
+Post.prototype.createNode = function (slug, index, node, cb) {
 	var self = this;
 
-	this.nodeCtrl.create(data.content, function(err, result) {
+	this.nodeCtrl.create(node, function(err, result) {
 		if (err) {
 			cb(err, null);
 		} else {
@@ -135,26 +169,32 @@ Post.prototype.createContent = function (data, cb) {
 
 			self.db.query({
 				box: self.box,
-				get: data.slug,
+				get: slug,
 				index: "slug"
 			},[{
 				replace: function(row) {
-					if (data.index) {
-						return row.merge({nodes: row("nodes").insertAt(data.index, id)});
+					if (index && index < row("nodes").length) {
+						return row.merge({nodes: row("nodes").insertAt(index, id)});
 					} else {
 						return row.merge({nodes: row("nodes").append(id)});
 					}
 				}
-			}], cb);
+			}], function (err, result) {
+				if(err) {
+					cb(err);
+				} else {
+					cb(null, {id: id});
+				}
+			});
 		}
 	});
 };
 
-Post.prototype.updateContent = function (id, to, cb) {
+Post.prototype.updateNode = function (id, to, cb) {
 	this.nodeCtrl.update(id, to, cb);
 };
 
-Post.prototype.removeContent = function (slug, id, cb) {
+Post.prototype.removeNode = function (slug, id, cb) {
 	var self = this;
 
 	this.nodeCtrl.remove(id, function(err, result) {

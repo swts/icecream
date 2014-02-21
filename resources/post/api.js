@@ -6,7 +6,7 @@ var returnHandler = require('apis-return').handler;
 var Post = function () {};
 inherits(Post, Unit);
 
-Post.prototype.name = 'post';
+Post.prototype.resource = 'post';
 
 Post.prototype.unitInit = function (units) {
 	this.ctrl = units.require('controller');

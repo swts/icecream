@@ -2,7 +2,7 @@
 
 
 module.exports = {
-	create: "root",
-	del: "root",
+	create: "author",
+	del: "editor",
 	update: "editor"
 };

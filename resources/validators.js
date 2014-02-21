@@ -6,12 +6,12 @@ var translate = valid.translate;
 
 var status = v.oneOf("draft", "ready", "published");
 
-
 module.exports = {
 	or: v.or,
 	str: v.str,
 	bool: v.bool,
 	opt: v.opt,
+	idx: v.idx,
 	basedOn: valid.basedOn,
 	slug: v.slug,
 	path: v.path,

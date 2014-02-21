@@ -2,14 +2,14 @@
 var UnitSet = require('units').UnitSet;
 
 var Api = require('./api');
-var request = require('./request');
+var Request = require('./request');
 var roles = require('./roles');
 
 var create = function () {
 	var units = new UnitSet();
 
 	units.add('api', new Api());
-	units.expose('request', request);
+	units.add('request', new Request());
 	units.expose('roles', roles);
 
 	return units;
