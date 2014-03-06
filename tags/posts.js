@@ -15,18 +15,20 @@ Posts.prototype.parse = function(parser, nodes) {
 
 Posts.prototype.render = function(context, slug, cb) {
 	var self = this,
-		callback = function(err, result) {
-			if(err) {
-				cb(null);
-			} else {
-				self.env.render("posts/posts.html", {posts: result, LANGUAGE: context.ctx.LANGUAGE}, cb);
-			}
-		};
+		env = this.env,
+		options = {withContent: true};
 
-	this.ctrl.getByCategory(slug, {
-		status: "published",
-		withContent: true
-	}, callback);
+	if(!context.ctx.auth) {
+		options.status = "published";
+	}
+
+	this.ctrl.getByCategory(slug, options, function(err, result) {
+		if(err) {
+			cb(null);
+		} else {
+			self.env.render("posts/posts.html", {posts: result, LANGUAGE: context.ctx.LANGUAGE}, cb);
+		}
+	});
 };
 
 

@@ -15,9 +15,14 @@ Post.prototype.parse = function(parser, nodes) {
 
 Post.prototype.render = function(context, slug, cb) {
 	var self = this,
-		env = this.env;
+		env = this.env,
+		options = {};
 
-	this.ctrl.get(slug, { status: "published"}, function(err, result) {
+	if(!context.ctx.auth) {
+		options.status = "published";
+	}
+
+	this.ctrl.get(slug, options, function(err, result) {
 		if(err) {
 			cb(null);
 		} else {
