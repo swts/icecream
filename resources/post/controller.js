@@ -28,7 +28,7 @@ Post.prototype.get = function(slug, options, cb) {
 
 	var self = this,
 		r = this.db.r,
-		now = Date.now()/1000,
+		now = Date.now(),
 		query = {
 			box: this.box,
 			get: slug,
@@ -71,7 +71,7 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	var self = this,
 		r = this.db.r,
 		filter,
-		now = Date.now()/1000,
+		now = Date.now(),
 		query = {
 			box: this.box
 		},
@@ -127,6 +127,10 @@ Post.prototype.getByCategory = function(category, options, cb) {
 
 Post.prototype.create = function (post, cb) {
 	var self = this;
+
+	if(!post.status) { post.status = "draft"; }
+	if(!post.date) { post.date = Date.now(); }
+	if(!post.publish_date && post.status === "published") { post.publish_date = Date.now();}
 
 	async.waterfall([
 		function (cb) {

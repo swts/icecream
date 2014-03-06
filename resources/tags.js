@@ -1,6 +1,7 @@
 "use strict";
 var inherits = require('util').inherits;
 var Unit = require('units').Unit;
+var Post = require('../tags/post');
 var Posts = require('../tags/posts');
 
 var Tags = function () {};
@@ -11,6 +12,7 @@ Tags.prototype.unitInit = function (units) {
 
 	if(env && env.addExtension) {
 		var ctrl = units.require('post.controller');
+		env.addExtension('Post', new Post(env, ctrl));
 		env.addExtension('Posts', new Posts(env, ctrl));
 	}
 };
