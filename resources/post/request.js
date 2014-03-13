@@ -7,7 +7,7 @@ var Request = function () {};
 inherits(Request, Unit);
 
 Request.prototype.unitInit = function(units) {
-	this.node = units.require("resources.node.request").create();
+	this.node = units.require("resources.node.request");
 	this.languages = units.require("core.settings").languages;
 };
 
@@ -33,7 +33,7 @@ Request.prototype.create = function() {
 			"preview": v.str,
 			"publish_date": v.posInt,
 			"nodes": v.opt([v.str]),
-			"content": v.opt([this.node]),
+			"content": v.opt([this.node.create()]),
 			"status": v.status
 		};
 
