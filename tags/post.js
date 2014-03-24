@@ -18,7 +18,7 @@ Post.prototype.render = function(context, slug, cb) {
 		env = this.env,
 		options = {};
 
-	if(!context.ctx.auth) {
+	if(!context.ctx.AUTH) {
 		options.status = "published";
 	}
 
