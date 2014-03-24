@@ -9,6 +9,7 @@ var Post = function () {
 inherits(Post, Unit);
 
 Post.prototype.box = "posts";
+Post.prototype.scheme = { indexes: ["slug"] };
 
 Post.prototype.unitInit = function (units) {
 	this.db = units.require('db');

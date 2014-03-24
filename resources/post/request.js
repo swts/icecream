@@ -30,7 +30,7 @@ Request.prototype.create = function() {
 			"slug": v.slug,
 			"categories": [v.path],
 			"date": v.posInt,
-			"preview": v.str,
+			"preview": v.opt(v.str),
 			"publish_date": v.posInt,
 			"nodes": v.opt([v.str]),
 			"content": v.opt([this.node.create()]),
