@@ -164,7 +164,10 @@ Post.prototype.remove = function (slug, cb) {
 };
 
 Post.prototype.createNode = function (slug, index, node, cb) {
-	var self = this;
+	var self = this,
+		r = self.db.r;
+
+	if(index === undefined) { index = -1;}
 
 	this.nodeCtrl.create(node, function(err, result) {
 		if (err) {
@@ -178,11 +181,11 @@ Post.prototype.createNode = function (slug, index, node, cb) {
 				index: "slug"
 			},[{
 				replace: function(row) {
-					if (index !== undefined && row("nodes").count().gt(index)) {
-						return row.merge({nodes: row("nodes").insertAt(index, id)});
-					} else {
-						return row.merge({nodes: row("nodes").append(id)});
-					}
+					return r.branch(
+						r.expr(index !== -1).and(row("nodes").count().gt(index)),
+						row.merge({nodes: row("nodes").insertAt(index, id)}),
+						row.merge({nodes: row("nodes").append(id)})
+					);
 				}
 			}], function (err, result) {
 				if(err) {
