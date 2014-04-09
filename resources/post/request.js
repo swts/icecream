@@ -29,12 +29,12 @@ Request.prototype.create = function() {
 	var validator = {
 			"slug": v.slug,
 			"categories": [v.path],
-			"date": v.posInt,
+			"date": v.opt(v.posInt),
 			"preview": v.opt(v.str),
-			"publish_date": v.posInt,
+			"publish_date": v.opt(v.posInt),
 			"nodes": v.opt([v.str]),
 			"content": v.opt([this.node.create()]),
-			"status": v.status
+			"status": v.opt(v.status)
 		};
 
 	if (this.languages) {
