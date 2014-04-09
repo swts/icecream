@@ -178,7 +178,7 @@ Post.prototype.createNode = function (slug, index, node, cb) {
 				index: "slug"
 			},[{
 				replace: function(row) {
-					if (index && index < row("nodes").length) {
+					if (index !== undefined && row("nodes").count().gt(index)) {
 						return row.merge({nodes: row("nodes").insertAt(index, id)});
 					} else {
 						return row.merge({nodes: row("nodes").append(id)});
