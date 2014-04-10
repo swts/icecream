@@ -19,6 +19,10 @@ Post.prototype.get = function (auth, data, cb) {
 		options.status = "published";
 	}
 
+	if (data.date) {
+		options.date = data.date;
+	}
+
 	if (data.slug) {
 		this.ctrl.get(data.slug, options, returnHandler("NotFound", cb));
 	} else if (data.category) {

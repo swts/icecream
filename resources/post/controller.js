@@ -99,24 +99,28 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	}
 
 	if (category !== "all" && category !== undefined) {
-		if(options.status) {
-			filter = function(row) {
-				return row('categories').contains(category).and(row('status').eq(options.status)).and(row("publish_date").le(now));
-			};
-		} else {
-			filter = function(row) {
+		ql.unshift({
+			filter: function(row) {
 				return row('categories').contains(category);
-			};
-		}
-	} else {
-		if (options.status) {
-			filter = function(row) {
-				return row('status').eq(options.status).and(row("publish_date").le(now));
-			};
-		}
+			}
+		});
 	}
 
-	query.filter = filter;
+	if (options.status) {
+		ql.unshift({
+			filter: function(row) {
+				return row('status').eq(options.status).and(row("publish_date").le(now));
+			}
+		});
+	}
+
+	if (options.date) {
+		ql.unshift({
+			filter: function(row) {
+				return row('date').le(options.date);
+			}
+		});
+	}
 
 	if (this.categories) {
 		this.db.joinTree(query, this.categories, ql, callback);

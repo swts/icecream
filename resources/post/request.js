@@ -16,10 +16,12 @@ Request.prototype.get = function() {
 		{slug: v.slug},
 		{
 			category: v.path,
+			date: v.opt(v.posInt),
 			withContent: v.opt(v.bool)
 		},
 		{
 			categories: [v.path],
+			date: v.opt(v.posInt),
 			withContent: v.opt(v.bool)
 		}
 	);
