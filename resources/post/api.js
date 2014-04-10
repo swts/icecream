@@ -23,6 +23,10 @@ Post.prototype.get = function (auth, data, cb) {
 		options.date = data.date;
 	}
 
+	if (data.limit) {
+		options.limit = data.limit;
+	}
+
 	if (data.slug) {
 		this.ctrl.get(data.slug, options, returnHandler("NotFound", cb));
 	} else if (data.category) {

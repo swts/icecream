@@ -122,6 +122,12 @@ Post.prototype.getByCategory = function(category, options, cb) {
 		});
 	}
 
+	if (options.limit) {
+		ql.push({
+			limit: options.limit
+		});
+	}
+
 	if (this.categories) {
 		this.db.joinTree(query, this.categories, ql, callback);
 	} else {

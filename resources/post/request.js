@@ -17,11 +17,13 @@ Request.prototype.get = function() {
 		{
 			category: v.path,
 			date: v.opt(v.posInt),
+			limit: v.opt(v.idx),
 			withContent: v.opt(v.bool)
 		},
 		{
 			categories: [v.path],
 			date: v.opt(v.posInt),
+			limit: v.opt(v.posInt),
 			withContent: v.opt(v.bool)
 		}
 	);
