@@ -101,7 +101,7 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	if (category !== "all" && category !== undefined) {
 		ql.unshift({
 			filter: function(row) {
-				return row('categories').hasFields(category);
+				return row('categories').contains(category);
 			}
 		});
 	}
