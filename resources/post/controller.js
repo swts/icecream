@@ -85,7 +85,7 @@ Post.prototype.getByCategory = function(category, options, cb) {
 		};
 
 	if(options.withContent) {
-		ql.unshift({map: function(post) {
+		ql.push({map: function(post) {
 				return post.merge({
 					content: post("nodes").map(function(id) {
 						return r.expr([
@@ -101,7 +101,7 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	if (category !== "all" && category !== undefined) {
 		ql.unshift({
 			filter: function(row) {
-				return row('categories').contains(category);
+				return row('categories').hasFields(category);
 			}
 		});
 	}
