@@ -13,16 +13,16 @@ Node.prototype.unitInit = function (units) {
 };
 
 Node.prototype.create = function (auth, data, cb) {
-	this.ctrl.createNode(data.slug, data.index, data.node, returnHandler("BadRequest", cb));
+	this.ctrl.createNode(data.id, data.index, data.node, returnHandler("BadRequest", cb));
 };
 
 Node.prototype.update = function (auth, data, cb) {
-	var id = data.slug.split('/');
+	var id = data.id.split('/');
 	this.ctrl.updateNode(id[1], data.to, returnHandler("BadRequest", cb));
 };
 
 Node.prototype.del = function (auth, data, cb) {
-	var id = data.slug.split('/');
+	var id = data.id.split('/');
 	this.ctrl.removeNode(id[0], id[1], returnHandler("NotFound", cb));
 };
 

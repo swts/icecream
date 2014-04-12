@@ -13,7 +13,7 @@ Request.prototype.unitInit = function(units) {
 
 Request.prototype.get = function() {
 	return v.or(
-		{slug: v.slug},
+		{id: v.slug},
 		{
 			category: v.path,
 			date: v.opt(v.posInt),
@@ -52,7 +52,7 @@ Request.prototype.create = function() {
 
 Request.prototype.update = function() {
 	var validator = {
-			slug: v.slug,
+			id: v.slug,
 			to: {
 				"slug": v.opt(v.slug),
 				"categories": v.opt([v.path]),
@@ -76,7 +76,7 @@ Request.prototype.update = function() {
 
 Request.prototype.del = function() {
 	return {
-		slug: v.slug
+		id: v.slug
 	};
 };
 

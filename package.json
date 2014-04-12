@@ -1,6 +1,6 @@
 {
 	"name": "sweets-icecream",
-	"version": "0.3.7",
+	"version": "0.4.0",
 	"description": "Sweets's posts",
 	"keywords": ["future", "web", "framework", "sweets", "projects"],
 	"author": "Yaroslav Kravchenko <yaroslav@fleve.co>",
@@ -10,9 +10,8 @@
 	"preferGlobal": false,
 	"license" : "GPLv3",
 	"dependencies": {
-		"async":	"~0.2.9",
+		"async":	"~0.6.2",
 		"units": 	"~0.0.1",
-
 		"apis-return": "~0.0.1",
 		"sweets-valid": "~0.0.1"
 	},

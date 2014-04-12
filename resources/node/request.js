@@ -12,7 +12,7 @@ Request.prototype.unitInit = function(units) {
 
 Request.prototype.create = function() {
 	return {
-		slug: v.slug,
+		id: v.slug,
 		index: v.opt(v.idx),
 		node: this.node.create()
 	};
@@ -20,14 +20,13 @@ Request.prototype.create = function() {
 
 Request.prototype.update = function() {
 	var validator = this.node.update();
-	delete validator.id;
-	validator.slug = v.path;
+	validator.id = v.path;
 	return validator;
 };
 
 Request.prototype.del = function() {
 	return {
-		slug: v.path
+		id: v.path
 	};
 };
 
