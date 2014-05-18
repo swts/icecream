@@ -38,14 +38,18 @@ Post.prototype.get = function(slug, options, cb) {
 		ql = [
 			{exclude: "id"},
 			{map: function(post) {
-				return post.merge({
-					content: post("nodes").map(function(id) {
-						return r.expr([
-							id,
-							r.table(self.nodeCtrl.box).get(id).without("id")
-						]);
-					}).coerceTo("object")
-				});
+				return r.branch(
+					post.hasFields("nodes"),
+					post.merge({
+						content: post("nodes").map(function(id) {
+							return r.expr([
+								id,
+								r.table(self.nodeCtrl.box).get(id).without("id")
+							]);
+						}).coerceTo("object")
+					}),
+					post
+				);
 			}},
 			{nth: 0}
 		];
@@ -81,19 +85,27 @@ Post.prototype.getByCategory = function(category, options, cb) {
 			{ exclude: "id" }
 		],
 		callback = function(err, result) {
-			result.toArray(cb);
+			if(err) {
+				cb(err);
+			} else {
+				result.toArray(cb);
+			}
 		};
 
 	if(options.withContent) {
 		ql.push({map: function(post) {
-				return post.merge({
-					content: post("nodes").map(function(id) {
-						return r.expr([
-							id,
-							r.table(self.nodeCtrl.box).get(id).without("id")
-						]);
-					}).coerceTo("object")
-				});
+				return r.branch(
+					post.hasFields("nodes"),
+					post.merge({
+						content: post("nodes").map(function(id) {
+							return r.expr([
+								id,
+								r.table(self.nodeCtrl.box).get(id).without("id")
+							]);
+						}).coerceTo("object")
+					}),
+					post
+				);
 			}
 		});
 	}
@@ -157,7 +169,13 @@ Post.prototype.create = function (post, cb) {
 				post.nodes = result.generated_keys;
 			}
 
-			self.db.insert(self.box, post, cb);
+			self.db.insert(self.box, post, function(err, result) {
+				if(err) {
+					cb(err);
+				} else {
+					cb(null, {id: result.generated_keys[0]});
+				}
+			});
 		}
 	], cb);
 };
