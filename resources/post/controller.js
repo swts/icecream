@@ -160,22 +160,16 @@ Post.prototype.create = function (post, cb) {
 				delete post.content;
 				self.db.insert(self.nodeCtrl.box, nodes, cb);
 			} else {
-				cb(null, {});
+				cb(null, []);
 			}
 		},
 
-		function (result, cb) {
-			if(result.generated_keys) {
-				post.nodes = result.generated_keys;
+		function (ids, cb) {
+			if(ids) {
+				post.nodes = ids;
 			}
 
-			self.db.insert(self.box, post, function(err, result) {
-				if(err) {
-					cb(err);
-				} else {
-					cb(null, {id: result.generated_keys[0]});
-				}
-			});
+			self.db.insert(self.box, post, cb);
 		}
 	], cb);
 };
@@ -195,12 +189,10 @@ Post.prototype.createNode = function (slug, index, node, cb) {
 
 	if(index === undefined) { index = -1;}
 
-	this.nodeCtrl.create(node, function(err, result) {
+	this.nodeCtrl.create(node, function(err, id) {
 		if (err) {
 			cb(err, null);
 		} else {
-			var id = result.generated_keys[0];
-
 			self.db.query({
 				box: self.box,
 				get: slug,

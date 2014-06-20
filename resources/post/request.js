@@ -32,8 +32,7 @@ Request.prototype.get = function() {
 Request.prototype.create = function() {
 	var validator = {
 			"slug": v.slug,
-			"categories": [v.path],
-			"date": v.opt(v.posInt),
+			"categories": v.opt([v.path]),
 			"preview": v.opt(v.str),
 			"publish_date": v.opt(v.posInt),
 			"nodes": v.opt([v.str]),
