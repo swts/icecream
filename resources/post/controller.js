@@ -201,15 +201,15 @@ Post.prototype.createNode = function (slug, index, node, cb) {
 				replace: function(row) {
 					return r.branch(
 						r.expr(index !== -1).and(row("nodes").count().gt(index)),
-						row.merge({nodes: row("nodes").insertAt(index, id)}),
-						row.merge({nodes: row("nodes").append(id)})
+						row.merge({nodes: row("nodes").insertAt(index, id[0])}),
+						row.merge({nodes: row("nodes").append(id[0])})
 					);
 				}
 			}], function (err, result) {
 				if(err) {
 					cb(err);
 				} else {
-					cb(null, {id: id});
+					cb(null, id);
 				}
 			});
 		}
