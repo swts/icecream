@@ -1,12 +1,9 @@
 {
 	"name": "sweets-icecream",
-	"version": "0.4.1",
+	"version": "0.4.2",
 	"description": "Sweets's posts",
 	"keywords": ["future", "web", "framework", "sweets", "projects"],
-	"author": "Yaroslav Kravchenko <yaroslav@fleve.co>",
-	"contributors": [
-		"Alexey Novikov <v@2dubs.com> (http://2dubs.com)"
-	],
+	"author": "Alexey Novikov <v@2dubs.com> (http://2dubs.com)",
 	"preferGlobal": false,
 	"license" : "GPLv3",
 	"dependencies": {
