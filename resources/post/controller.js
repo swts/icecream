@@ -56,7 +56,7 @@ Post.prototype.get = function(slug, options, cb) {
 
 	if(options.status !== undefined) {
 		query.filter = function(row) {
-			return row('status').eq(options.status).and(row("publish_date").le(now));
+			return row('status').eq(options.status).and(row("published").le(now));
 		};
 	}
 
@@ -81,7 +81,7 @@ Post.prototype.getByCategory = function(category, options, cb) {
 			box: this.box
 		},
 		ql = [
-			{ orderBy: this.db.r.desc('date') },
+			{ orderBy: this.db.r.desc('created') },
 			{ exclude: "id" }
 		],
 		callback = function(err, result) {
@@ -119,15 +119,23 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	if (options.status) {
 		ql.unshift({
 			filter: function(row) {
-				return row('status').eq(options.status).and(row("publish_date").le(now));
+				return row('status').eq(options.status).and(row("published").le(now));
 			}
 		});
 	}
 
-	if (options.date) {
+	if (options.created) {
 		ql.unshift({
 			filter: function(row) {
-				return row('date').le(options.date);
+				return row('created').le(options.created);
+			}
+		});
+	}
+
+	if (options.published) {
+		ql.unshift({
+			filter: function(row) {
+				return row('published').le(options.published);
 			}
 		});
 	}
@@ -150,8 +158,8 @@ Post.prototype.create = function (post, cb) {
 	var self = this;
 
 	if(!post.status) { post.status = "draft"; }
-	if(!post.date) { post.date = Date.now(); }
-	if(!post.publish_date && post.status === "published") { post.publish_date = Date.now();}
+	if(!post.created) { post.created = Date.now(); }
+	if(!post.published && post.status === "published") { post.published = Date.now();}
 
 	async.waterfall([
 		function (cb) {

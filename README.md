@@ -12,13 +12,14 @@ Next Web builder toolkit
 	slug: "item slug",
 	title: "string" || {}					// translation here and further depends on Sweets app settings
 	categories: ["public", "starred"],		// array of trees/categories items - optional
-	date: 1262341787,
 	nodes: ["id"],							// content ids, see sweets-caramel
 	preview: "/path/to/preview/image/or/something",
-	publish_date: 1262341787,				// controller won't return unpublished project for unauthorized user
 	status: "published"						// "draft" and "published" are currently supported, "draft" posts are not available for unauthorized users
+	published: 1262341787,					// published timestamp
+	created: 1262341787,					// created timestamp
 }
 ```
+
 
 Categories are stored as slugs from [Marshmallow](https://github.com/swts/marshmallow) and are merged on get request. To define merge entry set the following object in Sweets app settings: 
 ```js
@@ -33,8 +34,9 @@ this.categories = {
 ```
 
 ## API
-There are two resources: /post and /post/node - the second one is a wrapper to access post content - slugs for it look like "postSlug/nodeId". Get request returns resource objects, which are described below, and is only available for /post resource. Delete request objects for both resources are similar:
-
+There are two resources: /post and /post/node - the second one is a wrapper to access post content - slugs for it look like "postSlug/nodeId". 
+_Api won't return unpublished posts for non-authorised user._
+Get request returns resource objects, which are described below, and is only available for /post resource. Delete request objects for both resources are similar:
 #### GET
 ```js
 {

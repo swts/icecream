@@ -16,13 +16,15 @@ Request.prototype.get = function() {
 		{id: v.slug},
 		{
 			category: v.path,
-			date: v.opt(v.posInt),
+			created: v.opt(v.posInt),
+			published: v.opt(v.posInt),
 			limit: v.opt(v.idx),
 			withContent: v.opt(v.bool)
 		},
 		{
 			categories: [v.path],
-			date: v.opt(v.posInt),
+			created: v.opt(v.posInt),
+			published: v.opt(v.posInt),
 			limit: v.opt(v.posInt),
 			withContent: v.opt(v.bool)
 		}
@@ -31,13 +33,13 @@ Request.prototype.get = function() {
 
 Request.prototype.create = function() {
 	var validator = {
-			"slug": v.slug,
-			"categories": v.opt([v.path]),
-			"preview": v.opt(v.str),
-			"publish_date": v.opt(v.posInt),
-			"nodes": v.opt([v.str]),
-			"content": v.opt([this.node.create()]),
-			"status": v.opt(v.status)
+			slug: v.slug,
+			categories: v.opt([v.path]),
+			preview: v.opt(v.str),
+			published: v.opt(v.posInt),
+			nodes: v.opt([v.str]),
+			content: v.opt([this.node.create()]),
+			status: v.opt(v.status)
 		};
 
 	if (this.languages) {
@@ -53,14 +55,14 @@ Request.prototype.update = function() {
 	var validator = {
 			id: v.slug,
 			to: {
-				"slug": v.opt(v.slug),
-				"categories": v.opt([v.path]),
-				"date": v.opt(v.posInt),
-				"preview": v.opt(v.str),
-				"publish_date": v.opt(v.posInt),
-				"scheme": v.opt(v.str),
-				"nodes": v.opt([v.str]),
-				"status": v.opt(v.status)
+				slug: v.opt(v.slug),
+				categories: v.opt([v.path]),
+				date: v.opt(v.posInt),
+				preview: v.opt(v.str),
+				published: v.opt(v.posInt),
+				scheme: v.opt(v.str),
+				nodes: v.opt([v.str]),
+				status: v.opt(v.status)
 			}
 		};
 

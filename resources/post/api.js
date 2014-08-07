@@ -19,8 +19,12 @@ Post.prototype.get = function (auth, data, cb) {
 		options.status = "published";
 	}
 
-	if (data.date) {
-		options.date = data.date;
+	if (data.created) {
+		options.created = data.created;
+	}
+
+	if (data.published) {
+		options.published = data.published;
 	}
 
 	if (data.limit) {
