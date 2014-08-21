@@ -108,6 +108,8 @@ Post.prototype.getByCategory = function(category, options, cb) {
 				);
 			}
 		});
+	} else {
+		ql.push({exclude: "nodes"});
 	}
 
 	if (category !== "all" && category !== undefined) {
