@@ -1,10 +1,7 @@
 "use strict";
-var inherits = require('util').inherits;
-var Unit = require('units').Unit;
 var returnHandler = require('apis-return').handler;
 
 var Node = function () {};
-inherits(Node, Unit);
 
 Node.prototype.resource = 'post/node';
 

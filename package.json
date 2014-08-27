@@ -1,16 +1,16 @@
 {
 	"name": "sweets-icecream",
-	"version": "0.4.3",
+	"version": "0.4.5",
 	"description": "Sweets's posts",
 	"keywords": ["future", "web", "framework", "sweets", "projects"],
 	"author": "Alexey Novikov <v@2dubs.com> (http://2dubs.com)",
 	"preferGlobal": false,
 	"license" : "GPLv3",
 	"dependencies": {
-		"async":	"~0.6.2",
+		"async":	"~0.9.0",
 		"units": 	"~0.0.1",
-		"apis-return": "~0.0.1",
-		"sweets-valid": "~0.0.1"
+		"apis-return": "~0.0.3",
+		"sweets-valid": "~0.0.3"
 	},
 	"engines": {
 		"node": "~0.10.15"

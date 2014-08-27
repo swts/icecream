@@ -1,10 +1,7 @@
 'use strict';
-var inherits = require('util').inherits;
-var Unit = require('units').Unit;
 var v = require('../validators');
 
 var Request = function () {};
-inherits(Request, Unit);
 
 Request.prototype.unitInit = function(units) {
 	this.node = units.require("resources.node.request");

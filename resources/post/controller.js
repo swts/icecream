@@ -1,12 +1,9 @@
 "use strict";
-var inherits = require('util').inherits;
-var Unit = require('units').Unit;
 var async = require('async');
 
 var Post = function () {
 	this.db = null;
 };
-inherits(Post, Unit);
 
 Post.prototype.box = "posts";
 Post.prototype.scheme = { indexes: ["slug"] };
