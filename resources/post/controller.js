@@ -158,7 +158,7 @@ Post.prototype.create = function (post, cb) {
 
 	if(!post.status) { post.status = "draft"; }
 	if(!post.created) { post.created = Date.now(); }
-	if(!post.published && post.status === "published") { post.published = Date.now();}
+	if(!post.published) { post.published = post.created;}
 
 	async.waterfall([
 		function (cb) {
