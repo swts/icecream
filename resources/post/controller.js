@@ -154,17 +154,20 @@ Post.prototype.getByCategory = function(category, options, cb) {
 };
 
 Post.prototype.create = function (post, cb) {
-	var self = this;
+	var self = this, nodes;
 
 	if(!post.status) { post.status = "draft"; }
 	if(!post.created) { post.created = Date.now(); }
 	if(!post.published) { post.published = post.created;}
 
+	if(post.content) {
+		nodes = post.content;
+		delete post.content;
+	}
+
 	async.waterfall([
 		function (cb) {
-			if(post.content) {
-				var nodes = post.content;
-				delete post.content;
+			if(nodes) {
 				self.db.insert(self.nodeCtrl.box, nodes, cb);
 			} else {
 				cb(null, []);
@@ -174,9 +177,20 @@ Post.prototype.create = function (post, cb) {
 		function (ids, cb) {
 			if(ids) {
 				post.nodes = ids;
+				post.content = ids.reduce(function(a, b, i) {
+					a[b] = nodes[i];
+					return a;
+				}, {});
 			}
 
-			self.db.insert(self.box, post, cb);
+			self.db.insert(self.box, post, function(err, result) {
+				if(err) {
+					cb(err);
+				} else {
+					post.id = result[0];
+					cb(null, post);
+				}
+			});
 		}
 	], cb);
 };
