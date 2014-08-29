@@ -78,7 +78,7 @@ Post.prototype.getByCategory = function(category, options, cb) {
 			box: this.box
 		},
 		ql = [
-			{ orderBy: this.db.r.desc('created') },
+			{ orderBy: this.db.r.desc('published') },
 			{ exclude: "id" }
 		],
 		callback = function(err, result) {
