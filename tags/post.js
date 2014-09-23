@@ -24,7 +24,6 @@ Post.prototype.render = function(context, slug, cb) {
 
 	this.ctrl.get(slug, options, function(err, result) {
 		if(err) {
-			console.log(err);
 			cb(null);
 		} else {
 			var template;

@@ -13,10 +13,15 @@ Posts.prototype.parse = function(parser, nodes) {
 	return new nodes.CallExtensionAsync(this, 'render', args);
 };
 
-Posts.prototype.render = function(context, slug, cb) {
+Posts.prototype.render = function(context, slug, withContent, cb) {
+	if(!cb) {
+		cb = withContent;
+		withContent = false;
+	}
+
 	var self = this,
 		env = this.env,
-		options = {withContent: true};
+		options = {withContent: withContent};
 
 	if(!context.ctx.auth) {
 		options.status = "published";
@@ -26,7 +31,13 @@ Posts.prototype.render = function(context, slug, cb) {
 		if(err) {
 			cb(null);
 		} else {
-			self.env.render("posts/posts.html", {posts: result, LANGUAGE: context.ctx.LANGUAGE}, cb);
+			var template;
+			try {
+				template = env.getTemplate("posts/category-"+ slug +".html");
+			} catch(e) {
+				template = env.getTemplate("posts/posts.html");
+			}
+			template.render({posts: result, LANGUAGE: context.ctx.LANGUAGE}, cb);
 		}
 	});
 };

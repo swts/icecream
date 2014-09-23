@@ -6,7 +6,7 @@ var Post = function () {
 };
 
 Post.prototype.box = "posts";
-Post.prototype.scheme = { indexes: ["slug"] };
+Post.prototype.scheme = { indexes: ["slug", "published"] };
 
 Post.prototype.unitInit = function (units) {
 	this.db = units.require('db');
@@ -177,10 +177,6 @@ Post.prototype.create = function (post, cb) {
 		function (ids, cb) {
 			if(ids) {
 				post.nodes = ids;
-				post.content = ids.reduce(function(a, b, i) {
-					a[b] = nodes[i];
-					return a;
-				}, {});
 			}
 
 			self.db.insert(self.box, post, function(err, result) {
@@ -188,6 +184,14 @@ Post.prototype.create = function (post, cb) {
 					cb(err);
 				} else {
 					post.id = result[0];
+
+					if(post.nodes) {
+						post.content = ids.reduce(function(a, b, i) {
+							a[b] = nodes[i];
+							return a;
+						}, {});
+					}
+
 					cb(null, post);
 				}
 			});
