@@ -9,19 +9,24 @@ Request.prototype.unitInit = function(units) {
 };
 
 Request.prototype.get = function() {
+	var vDate = v.opt(v.or(
+		v.posInt,
+		[v.posInt]
+	));
+
 	return v.or(
 		{id: v.slug},
 		{
 			category: v.path,
-			created: v.opt(v.posInt),
-			published: v.opt(v.posInt),
+			created: vDate,
+			published: vDate,
 			limit: v.opt(v.idx),
 			withContent: v.opt(v.bool)
 		},
 		{
 			categories: [v.path],
-			created: v.opt(v.posInt),
-			published: v.opt(v.posInt),
+			created: vDate,
+			published: vDate,
 			limit: v.opt(v.posInt),
 			withContent: v.opt(v.bool)
 		}

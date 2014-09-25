@@ -1,12 +1,14 @@
 "use strict";
 var async = require('async');
 
+var isArray = Array.isArray;
+
 var Post = function () {
 	this.db = null;
 };
 
 Post.prototype.box = "posts";
-Post.prototype.scheme = { indexes: ["slug", "published"] };
+Post.prototype.scheme = { indexes: ["slug", "created", "published"] };
 
 Post.prototype.unitInit = function (units) {
 	this.db = units.require('db');
@@ -124,19 +126,27 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	}
 
 	if (options.created) {
-		ql.unshift({
-			filter: function(row) {
-				return row('created').le(options.created);
-			}
-		});
+		if(isArray(options.created)) {
+			query.between = [options.created[0], options.created[1], {index: "created"}];
+		} else {
+			ql.unshift({
+				filter: function(row) {
+					return row('created').le(options.created);
+				}
+			});
+		}
 	}
 
 	if (options.published) {
-		ql.unshift({
-			filter: function(row) {
-				return row('published').le(options.published);
-			}
-		});
+		if(isArray(options.published)) {
+			query.between = [options.published[0], options.published[1], {index: "published"}];
+		} else {
+			ql.unshift({
+				filter: function(row) {
+					return row('published').le(options.published);
+				}
+			});
+		}
 	}
 
 	if (options.limit) {
