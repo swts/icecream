@@ -18,8 +18,6 @@ module.exports = {
 	oneOf: v.oneOf,
 	posInt: v.posInt,
 	dict: v.dict,
-	status: status,
-
-	translate: translate
+	status: status
 };
 

@@ -1,5 +1,15 @@
 "use strict";
 
+var render = function(env, category, posts, cb) {
+	var template;
+	try {
+		template = env.getTemplate("posts/category-"+ category +".html");
+	} catch(e) {
+		template = env.getTemplate("posts/posts.html");
+	}
+	template.render({posts: posts}, cb);
+};
+
 var Posts = function(env, ctrl) {
 	this.tags = ['posts'];
 	this.ctrl = ctrl;
@@ -13,33 +23,31 @@ Posts.prototype.parse = function(parser, nodes) {
 	return new nodes.CallExtensionAsync(this, 'render', args);
 };
 
-Posts.prototype.render = function(context, slug, withContent, cb) {
+Posts.prototype.render = function(context, postsOrCategory, withContent, cb) {
 	if(!cb) {
 		cb = withContent;
 		withContent = false;
 	}
 
-	var self = this,
-		env = this.env,
-		options = {withContent: withContent};
+	if(typeof postsOrCategory !== "string") {
+		render(this.env, null, postsOrCategory, cb);
+	} else {
+		var self = this,
+			env = this.env,
+			options = {withContent: withContent};
 
-	if(!context.ctx.auth) {
-		options.status = "published";
-	}
-
-	this.ctrl.getByCategory(slug, options, function(err, result) {
-		if(err) {
-			cb(null);
-		} else {
-			var template;
-			try {
-				template = env.getTemplate("posts/category-"+ slug +".html");
-			} catch(e) {
-				template = env.getTemplate("posts/posts.html");
-			}
-			template.render({posts: result, LANGUAGE: context.ctx.LANGUAGE}, cb);
+		if(!context.ctx.auth) {
+			options.status = "published";
 		}
-	});
+
+		this.ctrl.getByCategory(postsOrCategory, options, function(err, result) {
+			if(err) {
+				cb(null);
+			} else {
+				render(self.env, postsOrCategory, result, cb);
+			}
+		});
+	}
 };
 
 
