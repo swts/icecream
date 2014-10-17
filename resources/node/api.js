@@ -10,7 +10,12 @@ Node.prototype.unitInit = function (units) {
 };
 
 Node.prototype.create = function (auth, data, cb) {
-	this.ctrl.createNode(data.id, data.index, data.node, returnHandler("BadRequest", cb));
+	var id = data.id,
+		index = data.index;
+
+	delete data.id;
+	delete data.index;
+	this.ctrl.createNode(id, index, data, returnHandler("BadRequest", cb));
 };
 
 Node.prototype.update = function (auth, data, cb) {

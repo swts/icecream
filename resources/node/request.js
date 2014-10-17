@@ -8,11 +8,10 @@ Request.prototype.unitInit = function(units) {
 };
 
 Request.prototype.create = function() {
-	return {
-		id: v.slug,
-		index: v.opt(v.idx),
-		node: this.node.create()
-	};
+	var validator = this.node.create();
+	validator.id = v.slug;
+	validator.index = v.opt(v.idx);
+	return validator;
 };
 
 Request.prototype.update = function() {
