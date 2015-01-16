@@ -80,7 +80,7 @@ Post.prototype.getByCategory = function(category, options, cb) {
 			box: this.box
 		},
 		ql = [
-			{ orderBy: this.db.r.desc('published') },
+			{ orderBy: this.db.r[options.orderByOrder || "desc"](options.orderByField ||  "published") },
 			{ exclude: "id" }
 		],
 		callback = function(err, result) {
@@ -160,7 +160,6 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	} else {
 		this.db.query(query, ql, callback);
 	}
-
 };
 
 Post.prototype.create = function (post, cb) {

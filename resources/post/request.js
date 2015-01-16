@@ -55,7 +55,6 @@ Request.prototype.update = function() {
 			date: v.opt(v.posInt),
 			preview: v.opt(v.str),
 			published: v.opt(v.posInt),
-			scheme: v.opt(v.str),
 			nodes: v.opt([v.str]),
 			status: v.opt(v.status)
 		}
