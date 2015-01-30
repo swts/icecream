@@ -36,7 +36,7 @@ Post.prototype.render = function(context, postOrSlug, cb) {
 
 		this.ctrl.get(postOrSlug, options, function(err, result) {
 			if(err) {
-				cb(null);
+				cb(null, "");
 			} else {
 				render(self.env, result, cb);
 			}
