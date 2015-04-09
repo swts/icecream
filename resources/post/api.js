@@ -1,16 +1,16 @@
 "use strict";
-var returnHandler = require('apis-return').handler;
+let returnHandler = require("apis-return").handler;
 
-var Post = function () {};
+let Post = function () {};
 
-Post.prototype.resource = 'post';
+Post.prototype.resource = "post";
 
 Post.prototype.unitInit = function (units) {
-	this.ctrl = units.require('controller');
+	this.ctrl = units.require("controller");
 };
 
 Post.prototype.get = function (auth, data, cb) {
-	var options = {};
+	let options = {};
 
 	if(!(auth && auth.identity)) {
 		options.status = "published";

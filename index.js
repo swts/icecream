@@ -1,21 +1,17 @@
 "use strict";
-var UnitSet = require('units').UnitSet;
+var UnitSet = require("units").UnitSet;
 
-var postUnits = require('./resources/post/units');
-var nodeUnits = require('./resources/node/units');
-var Tags = require('./tags');
+var post = require("./resources/post/units");
+var node = require("./resources/node/units");
+var Tags = require("./tags");
 
-var create = function () {
+
+module.exports = function () {
 	var units = new UnitSet();
 
-	units.addSet('post', postUnits.create());
-	units.addSet('post.node', nodeUnits.create());
-	units.add('post.tags', new Tags());
+	units.addSet("post", post());
+	units.addSet("post.node", node());
+	units.add("post.tags", new Tags());
 
 	return units;
 };
-
-module.exports = {
-	create: create
-};
-

@@ -1,9 +1,9 @@
 "use strict";
-var async = require('async');
+let async = require("neo-async");
 
-var isArray = Array.isArray;
+let isArray = Array.isArray;
 
-var Post = function () {
+let Post = function () {
 	this.db = null;
 };
 
@@ -11,10 +11,10 @@ Post.prototype.box = "posts";
 Post.prototype.scheme = { indexes: ["slug", "created", "published"] };
 
 Post.prototype.unitInit = function (units) {
-	this.db = units.require('db');
-	this.nodeCtrl = units.require('resources.node.controller');
+	this.db = units.require("db");
+	this.nodeCtrl = units.require("resources.node.controller");
 
-	var categories = units.require("core.settings").categories;
+	let categories = units.require("core.settings").categories;
 	if (categories) {
 		this.categories = categories[this.box];
 	}
@@ -26,44 +26,24 @@ Post.prototype.get = function(slug, options, cb) {
 		options = {};
 	}
 
-	var self = this,
-		r = this.db.r,
-		now = Date.now(),
-		query = {
-			box: this.box,
-			get: slug,
-			index: "slug"
-		},
-		ql = [
-			{exclude: "id"},
-			{map: function(post) {
-				return r.branch(
-					post.hasFields("nodes"),
-					post.merge({
-						content: post("nodes").map(function(id) {
-							return r.expr([
-								id,
-								r.table(self.nodeCtrl.box).get(id).without("id")
-							]);
-						}).coerceTo("object")
-					}),
-					post
-				);
-			}},
-			{nth: 0}
-		];
+	let r = this.db.r;
 
-	if(options.status !== undefined) {
-		query.filter = function(row) {
-			return row('status').eq(options.status).and(row("published").le(now));
-		};
-	}
+	let q = r.table(this.box).getAll(slug, {index: "slug"});
 
 	if (this.categories) {
-		self.db.joinTree(query, this.categories, ql, cb);
-	} else {
-		self.db.query(query, ql, cb);
+		q = this.db.joinTree(q, this.categories);
 	}
+
+	q = this.filterStatus(q, options.status);
+	q = this.mergeNodes(q);
+
+	q.without("id")
+		.nth(0)
+		.run()
+		.catch(cb)
+		.then(function(res) {
+			cb(null, res);
+		});
 };
 
 Post.prototype.getByCategory = function(category, options, cb) {
@@ -72,98 +52,40 @@ Post.prototype.getByCategory = function(category, options, cb) {
 		options = {};
 	}
 
-	var self = this,
-		r = this.db.r,
-		filter,
-		now = Date.now(),
-		query = {
-			box: this.box
-		},
-		ql = [
-			{ orderBy: this.db.r[options.orderByOrder || "desc"](options.orderByField ||  "published") },
-			{ exclude: "id" }
-		],
-		callback = function(err, result) {
-			if(err) {
-				cb(err);
-			} else {
-				result.toArray(cb);
-			}
-		};
+	let r = this.db.r;
 
-	if(options.withContent) {
-		ql.push({map: function(post) {
-				return r.branch(
-					post.hasFields("nodes"),
-					post.merge({
-						content: post("nodes").map(function(id) {
-							return r.expr([
-								id,
-								r.table(self.nodeCtrl.box).get(id).without("id")
-							]);
-						}).coerceTo("object")
-					}),
-					post
-				);
-			}
-		});
-	} else {
-		ql.push({exclude: "nodes"});
-	}
+	let q = r.table(this.box);
 
-	if (category !== "all" && category !== undefined) {
-		query.filter = function(row) {
-			return row('categories').contains(category);
-		};
-	}
-
-	if (options.status) {
-		ql.unshift({
-			filter: function(row) {
-				return row('status').eq(options.status).and(row("published").le(now));
-			}
-		});
-	}
-
-	if (options.created) {
-		if(isArray(options.created)) {
-			query.between = [options.created[0], options.created[1], {index: "created"}];
-		} else {
-			ql.unshift({
-				filter: function(row) {
-					return row('created').le(options.created);
-				}
-			});
-		}
-	}
-
-	if (options.published) {
-		if(isArray(options.published)) {
-			query.between = [options.published[0], options.published[1], {index: "published"}];
-		} else {
-			ql.unshift({
-				filter: function(row) {
-					return row('published').le(options.published);
-				}
-			});
-		}
-	}
+	q = this.filterDates(q, "published", options.published);
+	q = this.filterDates(q, "created", options.created);
+	q = this.filterStatus(q, options.status);
+	q = this.filterCategory(q, category);
 
 	if (options.limit) {
-		ql.push({
-			limit: options.limit
-		});
+		q = q.limit(options.limit);
 	}
 
 	if (this.categories) {
-		this.db.joinTree(query, this.categories, ql, callback);
-	} else {
-		this.db.query(query, ql, callback);
+		q = this.db.joinTree(q, this.categories);
 	}
+
+	if(options.withContent) {
+		q = this.mergeNodes(q);
+	} else {
+		q = q.without("nodes");
+	}
+
+	q.orderBy(r[options.orderByOrder || "desc"](options.orderByField || "published"))
+		.without("id")
+		.run()
+		.catch(cb)
+		.then(function(res) {
+			cb(null, res);
+		});
 };
 
 Post.prototype.create = function (post, cb) {
-	var self = this, nodes;
+	let self = this, nodes;
 
 	if(!post.status) { post.status = "draft"; }
 	if(!post.created) { post.created = Date.now(); }
@@ -209,16 +131,74 @@ Post.prototype.create = function (post, cb) {
 };
 
 Post.prototype.update = function (slug, to, cb) {
-	this.db.update(this.box, slug, to, cb);
+	this.db.updateSlug(this.box, slug, to, cb);
 };
 
 Post.prototype.remove = function (slug, cb) {
 	// remove nodes or not???
-	this.db.remove(this.box, slug, cb);
+	this.db.removeSlug(this.box, slug, cb);
 };
 
+//filters
+Post.prototype.filterDates = function(query, name, value) {
+	if(value) {
+		if(isArray(value)) {
+			return query.between(value[0], value[1], {index: name});
+		} else {
+			return query.filter(this.db.r.row(name).le(value));
+		}
+	}
+
+	return query;
+};
+
+Post.prototype.filterStatus = function(query, value) {
+	if(value !== undefined) {
+		let r = this.db.r;
+		return query.filter(
+			r.row("status")
+				.eq(value)
+				.and(
+					r.row("published").le(Date.now())
+				)
+		);
+	}
+
+	return query;
+};
+
+Post.prototype.filterCategory = function(query, value) {
+	if (value !== "all" && value !== undefined) {
+		return query.filter(
+			this.db.r.row("categories").contains(value)
+		);
+	}
+
+	return query;
+};
+
+Post.prototype.mergeNodes = function(query) {
+	let r = this.db.r,
+		nodeBox = this.nodeCtrl.box;
+	return query.map(function(post) {
+		return r.branch(
+			post.hasFields("nodes"),
+			post.merge({
+				content: post("nodes").map(function(id) {
+					return r.expr([
+						id,
+						r.table(nodeBox).get(id).without("id")
+					]);
+				}).coerceTo("object")
+			}),
+			post
+		);
+	});
+};
+
+//nodes
 Post.prototype.createNode = function (slug, index, node, cb) {
-	var self = this,
+	let self = this,
 		r = self.db.r;
 
 	if(index === undefined) { index = -1;}
@@ -227,25 +207,20 @@ Post.prototype.createNode = function (slug, index, node, cb) {
 		if (err) {
 			cb(err, null);
 		} else {
-			self.db.query({
-				box: self.box,
-				get: slug,
-				index: "slug"
-			},[{
-				replace: function(row) {
+			self.db.r.table(self.box)
+				.getAll(slug, {index: "slug"})
+				.replace(function(row) {
 					return r.branch(
 						r.expr(index !== -1).and(row("nodes").count().gt(index)),
 						row.merge({nodes: row("nodes").insertAt(index, id[0])}),
 						row.merge({nodes: row("nodes").append(id[0])})
 					);
-				}
-			}], function (err, result) {
-				if(err) {
-					cb(err);
-				} else {
+				})
+				.run()
+				.catch(cb)
+				.then(function() {
 					cb(null, id);
-				}
-			});
+				});
 		}
 	});
 };
@@ -255,22 +230,22 @@ Post.prototype.updateNode = function (id, to, cb) {
 };
 
 Post.prototype.removeNode = function (slug, id, cb) {
-	var self = this;
+	let self = this;
 
-	this.nodeCtrl.remove(id, function(err, result) {
+	this.nodeCtrl.remove(id, function(err) {
 		if (err) {
 			cb(err, null);
 		} else {
-			self.db.query({
-				box: self.box,
-				get: slug,
-				index: "slug"
-			},
-			[{
-				replace: function(row) {
+			self.db.r.table(self.box)
+				.getAll(slug, {index: "slug"})
+				.replace( function(row) {
 					return row.merge({nodes: row("nodes").setDifference([id])});
-				}
-			}], cb);
+				})
+				.run()
+				.catch(cb)
+				.then(function(res) {
+					cb(null, res);
+				});
 		}
 	});
 };

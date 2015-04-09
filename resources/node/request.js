@@ -1,21 +1,21 @@
-'use strict';
-var v = require('../validators');
+"use strict";
+let v = require("../validators");
 
-var Request = function () {};
+let Request = function () {};
 
 Request.prototype.unitInit = function(units) {
 	this.node = units.require("resources.node.request");
 };
 
 Request.prototype.create = function() {
-	var validator = this.node.create();
+	let validator = this.node.create();
 	validator.id = v.slug;
 	validator.index = v.opt(v.idx);
 	return validator;
 };
 
 Request.prototype.update = function() {
-	var validator = this.node.update();
+	let validator = this.node.update();
 	validator.id = v.path;
 	return validator;
 };

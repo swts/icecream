@@ -3,6 +3,6 @@
 
 module.exports = {
 	create: "author",
-	del: "editor",
-	update: "editor"
+	del: "author",
+	update: "author"
 };

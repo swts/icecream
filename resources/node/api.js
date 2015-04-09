@@ -1,16 +1,18 @@
 "use strict";
-var returnHandler = require('apis-return').handler;
+let returnHandler = require("apis-return").handler;
 
-var Node = function () {};
+let Node = function () {
+	this.ctrl = undefined;
+};
 
-Node.prototype.resource = 'post/node';
+Node.prototype.resource = "post/node";
 
 Node.prototype.unitInit = function (units) {
-	this.ctrl = units.require('post.controller');
+	this.ctrl = units.require("post.controller");
 };
 
 Node.prototype.create = function (auth, data, cb) {
-	var id = data.id,
+	let id = data.id,
 		index = data.index;
 
 	delete data.id;
@@ -19,12 +21,12 @@ Node.prototype.create = function (auth, data, cb) {
 };
 
 Node.prototype.update = function (auth, data, cb) {
-	var id = data.id.split('/');
+	let id = data.id.split("/");
 	this.ctrl.updateNode(id[1], data.to, returnHandler("BadRequest", cb));
 };
 
 Node.prototype.del = function (auth, data, cb) {
-	var id = data.id.split('/');
+	let id = data.id.split("/");
 	this.ctrl.removeNode(id[0], id[1], returnHandler("NotFound", cb));
 };
 

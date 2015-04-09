@@ -1,8 +1,7 @@
 "use strict";
 
-
 module.exports = {
-	create: "editor",
-	del: "editor",
-	update: "editor"
+	create: "author",
+	del: "author",
+	update: "author"
 };
