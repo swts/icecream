@@ -53,8 +53,9 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	}
 
 	let r = this.db.r;
-
-	let q = r.table(this.box);
+	let q = r.table(this.box).orderBy({
+		index: r[options.orderByOrder || "desc"](options.orderByField || "published")
+	});
 
 	q = this.filterDates(q, "published", options.published);
 	q = this.filterDates(q, "created", options.created);
@@ -75,8 +76,7 @@ Post.prototype.getByCategory = function(category, options, cb) {
 		q = q.without("nodes");
 	}
 
-	q.orderBy(r[options.orderByOrder || "desc"](options.orderByField || "published"))
-		.without("id")
+	q.without("id")
 		.run()
 		.catch(cb)
 		.then(function(res) {

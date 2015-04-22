@@ -16,7 +16,7 @@ Request.prototype.get = function() {
 	return v.or(
 		{id: v.slug},
 		{
-			category: v.path,
+			category: v.opt(v.path),
 			created: vDate,
 			published: vDate,
 			limit: v.opt(v.idx),
@@ -35,7 +35,7 @@ Request.prototype.get = function() {
 Request.prototype.create = function() {
 	return {
 		slug: v.slug,
-		title: v.str,
+		title: v.opt(v.str),
 		categories: v.opt([v.path]),
 		preview: v.opt(v.str),
 		published: v.opt(v.posInt),
