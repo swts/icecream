@@ -14,7 +14,8 @@ Request.prototype.get = function() {
 	));
 
 	return v.or(
-		{id: v.slug},
+		{id: v.uuid},
+		{slug: v.slug},
 		{
 			category: v.opt(v.path),
 			created: vDate,
@@ -33,27 +34,30 @@ Request.prototype.get = function() {
 };
 
 Request.prototype.create = function() {
+	let nodeValid = this.node.create();
+
 	return {
 		slug: v.slug,
 		title: v.opt(v.str),
 		categories: v.opt([v.path]),
-		preview: v.opt(v.str),
+		preview: v.opt(nodeValid),
 		published: v.opt(v.posInt),
 		nodes: v.opt([v.str]),
-		content: v.opt([this.node.create()]),
+		content: v.opt([nodeValid]),
 		status: v.opt(v.status)
 	};
 };
 
 Request.prototype.update = function() {
+	let nodeValid = this.node.update();
 	return {
-		id: v.slug,
+		id: v.uuid,
 		to: {
 			slug: v.opt(v.slug),
 			title: v.opt(v.str),
 			categories: v.opt([v.path]),
 			date: v.opt(v.posInt),
-			preview: v.opt(v.str),
+			preview: v.opt(nodeValid),
 			published: v.opt(v.posInt),
 			nodes: v.opt([v.str]),
 			status: v.opt(v.status)
@@ -63,7 +67,7 @@ Request.prototype.update = function() {
 
 Request.prototype.del = function() {
 	return {
-		id: v.slug
+		id: v.uuid
 	};
 };
 

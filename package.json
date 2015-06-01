@@ -6,7 +6,7 @@
 	"author": "Alexey Novikov <v@2dubs.com> (http://2dubs.com)",
 	"license" : "GPLv3",
 	"dependencies": {
-		"neo-async":	"~0.6.0",
+		"neo-async":	"~1.0.0",
 		"units": 		"~0.0.1",
 		"apis-return":	"~0.0.3",
 		"sweets-valid": "~0.0.3"

@@ -1,7 +1,7 @@
 "use strict";
 let valid = require("sweets-valid");
 let v = valid.validators;
-let status = v.oneOf("draft", "ready", "published");
+let postStatus = v.oneOf("draft", "ready", "published");
 
 module.exports = {
 	or: v.or,
@@ -13,5 +13,6 @@ module.exports = {
 	path: v.path,
 	oneOf: v.oneOf,
 	posInt: v.posInt,
-	status: status
+	uuid: v.uuid,
+	status: postStatus
 };

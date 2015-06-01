@@ -20,7 +20,32 @@ Post.prototype.unitInit = function (units) {
 	}
 };
 
-Post.prototype.get = function(slug, options, cb) {
+Post.prototype.get = function(id, options, cb) {
+	if(cb === undefined) {
+		cb = options;
+		options = {};
+	}
+
+	let r = this.db.r;
+
+	let q = r.table(this.box).get(id);
+
+	if (this.categories) {
+		q = this.db.joinTree(q, this.categories);
+	}
+
+	q = this.mergePreview(q);
+	q = this.mergeNodes(q);
+
+	q
+		.run()
+		.catch(cb)
+		.then(function(res) {
+			cb(null, res);
+		});
+};
+
+Post.prototype.getBySlug = function(slug, options, cb) {
 	if(cb === undefined) {
 		cb = options;
 		options = {};
@@ -35,10 +60,10 @@ Post.prototype.get = function(slug, options, cb) {
 	}
 
 	q = this.filterStatus(q, options.status);
+	q = this.mergePreview(q);
 	q = this.mergeNodes(q);
 
-	q.without("id")
-		.nth(0)
+	q
 		.run()
 		.catch(cb)
 		.then(function(res) {
@@ -70,13 +95,15 @@ Post.prototype.getByCategory = function(category, options, cb) {
 		q = this.db.joinTree(q, this.categories);
 	}
 
+	q = this.mergePreview(q);
+
 	if(options.withContent) {
 		q = this.mergeNodes(q);
 	} else {
 		q = q.without("nodes");
 	}
 
-	q.without("id")
+	q
 		.run()
 		.catch(cb)
 		.then(function(res) {
@@ -85,11 +112,16 @@ Post.prototype.getByCategory = function(category, options, cb) {
 };
 
 Post.prototype.create = function (post, cb) {
-	let self = this, nodes;
+	let self = this, nodes, preview;
 
 	if(!post.status) { post.status = "draft"; }
 	if(!post.created) { post.created = Date.now(); }
-	if(!post.published) { post.published = post.created;}
+	if(!post.published) { post.published = post.created; }
+
+	if(post.preview) {
+		preview = post.preview;
+		delete post.preview;
+	}
 
 	if(post.content) {
 		nodes = post.content;
@@ -97,33 +129,50 @@ Post.prototype.create = function (post, cb) {
 	}
 
 	async.waterfall([
-		function (cb) {
-			if(nodes) {
-				self.db.insert(self.nodeCtrl.box, nodes, cb);
+		function (cb1) {
+			if(preview) {
+				self.db.insert(self.nodeCtrl.box, preview, cb1);
 			} else {
-				cb(null, []);
+				cb1(null, []);
 			}
 		},
 
-		function (ids, cb) {
-			if(ids) {
-				post.nodes = ids;
+		function (previewIds, cb2) {
+			if(previewIds) {
+				post.preview = previewIds[0];
+			}
+
+			if(nodes) {
+				self.db.insert(self.nodeCtrl.box, nodes, cb2);
+			} else {
+				cb2(null, []);
+			}
+		},
+
+		function (nodeIds, cb3) {
+			if(nodes) {
+				post.nodes = nodes;
 			}
 
 			self.db.insert(self.box, post, function(err, result) {
 				if(err) {
-					cb(err);
+					cb3(err);
 				} else {
 					post.id = result[0];
 
 					if(post.nodes) {
-						post.content = ids.reduce(function(a, b, i) {
+						post.content = nodes.reduce(function(a, b, i) {
 							a[b] = nodes[i];
 							return a;
 						}, {});
 					}
 
-					cb(null, post);
+					if(preview) {
+						preview.id = post.preview;
+						post.preview = preview;
+					}
+
+					cb3(null, post);
 				}
 			});
 		}
@@ -131,12 +180,12 @@ Post.prototype.create = function (post, cb) {
 };
 
 Post.prototype.update = function (slug, to, cb) {
-	this.db.updateSlug(this.box, slug, to, cb);
+	this.db.update(this.box, slug, to, cb);
 };
 
 Post.prototype.remove = function (slug, cb) {
-	// remove nodes or not???
-	this.db.removeSlug(this.box, slug, cb);
+	// remove nodes or not? probably yes
+	this.db.remove(this.box, slug, cb);
 };
 
 //filters
@@ -168,7 +217,7 @@ Post.prototype.filterStatus = function(query, value) {
 };
 
 Post.prototype.filterCategory = function(query, value) {
-	if (value !== "all" && value !== undefined) {
+	if (value !== "all" && value !== "everything" && value !== undefined) {
 		return query.filter(
 			this.db.r.row("categories").contains(value)
 		);
@@ -177,69 +226,131 @@ Post.prototype.filterCategory = function(query, value) {
 	return query;
 };
 
+Post.prototype.mergePreview = function(query) {
+	let r = this.db.r;
+	let nodeBox = this.nodeCtrl.box;
+
+	return query.merge(function(post) {
+		return r.branch(
+			post.hasFields("preview"),
+			{
+				preview: r.table(nodeBox).get(post("preview"))
+			},
+			{}
+		);
+	});
+};
+
 Post.prototype.mergeNodes = function(query) {
-	let r = this.db.r,
-		nodeBox = this.nodeCtrl.box;
-	return query.map(function(post) {
+	let r = this.db.r;
+	let nodeBox = this.nodeCtrl.box;
+
+	return query.merge(function(post) {
 		return r.branch(
 			post.hasFields("nodes"),
-			post.merge({
+			{
 				content: post("nodes").map(function(id) {
-					return r.expr([
-						id,
-						r.table(nodeBox).get(id).without("id")
-					]);
-				}).coerceTo("object")
-			}),
-			post
+						return r.expr([
+							id,
+							r.table(nodeBox).get(id).without("id")
+						]);
+					}).coerceTo("object")
+			},
+			{}
 		);
 	});
 };
 
 //nodes
-Post.prototype.createNode = function (slug, index, node, cb) {
-	let self = this,
-		r = self.db.r;
+Post.prototype.createPreview = function (id, node, cb) {
+	let self = this;
+	let r = self.db.r;
 
-	if(index === undefined) { index = -1;}
-
-	this.nodeCtrl.create(node, function(err, id) {
+	this.nodeCtrl.create(node, function(err, nodeIds) {
 		if (err) {
 			cb(err, null);
 		} else {
-			self.db.r.table(self.box)
-				.getAll(slug, {index: "slug"})
-				.replace(function(row) {
-					return r.branch(
-						r.expr(index !== -1).and(row("nodes").count().gt(index)),
-						row.merge({nodes: row("nodes").insertAt(index, id[0])}),
-						row.merge({nodes: row("nodes").append(id[0])})
-					);
-				})
+			r.table(self.box)
+				.get(id)
+				.replace( r.row.merge({preview: nodeIds[0]}) )
 				.run()
 				.catch(cb)
 				.then(function() {
-					cb(null, id);
+					cb(null, nodeIds[0]);
 				});
 		}
 	});
 };
 
-Post.prototype.updateNode = function (id, to, cb) {
-	this.nodeCtrl.update(id, to, cb);
+Post.prototype.updatePreview = function (id, nodeId, to, cb) {
+	this.nodeCtrl.update(nodeId, to, cb);
 };
 
-Post.prototype.removeNode = function (slug, id, cb) {
+Post.prototype.removePreview = function (id, nodeId, cb) {
 	let self = this;
+	let r = this.db.r;
 
 	this.nodeCtrl.remove(id, function(err) {
 		if (err) {
 			cb(err, null);
 		} else {
-			self.db.r.table(self.box)
-				.getAll(slug, {index: "slug"})
+			r.table(self.box)
+				.get(id)
+				.replace( r.row.without("preview") )
+				.run()
+				.catch(cb)
+				.then(function(res) {
+					cb(null, res);
+				});
+		}
+	});
+};
+
+//nodes
+Post.prototype.createNode = function (id, index, node, cb) {
+	let self = this,
+		r = self.db.r;
+
+	if(index === undefined) { index = -1; }
+
+	this.nodeCtrl.create(node, function(err, nodeIds) {
+		if (err) {
+			cb(err, null);
+		} else {
+			r.table(self.box)
+				.get(id)
+				.replace(function(row) {
+					return r.branch(
+						r.expr(index !== -1).and(row("nodes").count().gt(index)),
+						row.merge({nodes: row("nodes").insertAt(index, nodeIds[0])}),
+						row.merge({nodes: row("nodes").append(nodeIds[0])})
+					);
+				})
+				.run()
+				.catch(cb)
+				.then(function() {
+					cb(null, nodeIds[0]);
+				});
+		}
+	});
+};
+
+Post.prototype.updateNode = function (id, nodeId, to, cb) {
+	this.nodeCtrl.update(nodeId, to, cb);
+};
+
+Post.prototype.removeNode = function (id, nodeId, cb) {
+	let self = this;
+	let r = this.db.r;
+
+	this.nodeCtrl.remove(nodeId, function(err) {
+		if (err) {
+			cb(err, null);
+		} else {
+			r.table(self.box)
+				.get(id)
 				.replace( function(row) {
-					return row.merge({nodes: row("nodes").setDifference([id])});
+					return row.merge({nodes: row("nodes").setDifference([nodeId])});
 				})
 				.run()
 				.catch(cb)

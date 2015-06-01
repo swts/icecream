@@ -18,6 +18,8 @@ Post.prototype.get = function (auth, data, cb) {
 
 	if (data.id) {
 		this.ctrl.get(data.id, options, returnHandler("NotFound", cb));
+	} else if (data.slug) {
+		this.ctrl.getBySlug(data.slug, options, returnHandler("NotFound", cb));
 	} else {
 		if (data.created) {
 			options.created = data.created;
