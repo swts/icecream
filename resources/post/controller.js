@@ -71,7 +71,7 @@ Post.prototype.getBySlug = function(slug, options, cb) {
 		});
 };
 
-Post.prototype.getByCategory = function(category, options, cb) {
+Post.prototype.getByCategories = function(categories, options, cb) {
 	if(cb === undefined) {
 		cb = options;
 		options = {};
@@ -85,7 +85,7 @@ Post.prototype.getByCategory = function(category, options, cb) {
 	q = this.filterDates(q, "published", options.published);
 	q = this.filterDates(q, "created", options.created);
 	q = this.filterStatus(q, options.status);
-	q = this.filterCategory(q, category);
+	q = this.filterCategories(q, isArray(categories) ? categories : [categories] );
 
 	if (options.limit) {
 		q = q.limit(options.limit);
@@ -216,10 +216,11 @@ Post.prototype.filterStatus = function(query, value) {
 	return query;
 };
 
-Post.prototype.filterCategory = function(query, value) {
-	if (value !== "all" && value !== "everything" && value !== undefined) {
+Post.prototype.filterCategories = function(query, value) {
+	if(value[0] !== undefined || value[0] !== "all" || value[0] !== "everything") {
+		var r = this.db.r;
 		return query.filter(
-			this.db.r.row("categories").contains(value)
+			r.row("categories").contains(r.args(value))
 		);
 	}
 

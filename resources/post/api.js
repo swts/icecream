@@ -34,7 +34,7 @@ Post.prototype.get = function (auth, data, cb) {
 		}
 
 		options.withContent = data.withContent;
-		this.ctrl.getByCategory(data.category, options, returnHandler("NotFound", cb));
+		this.ctrl.getByCategories(data.categories || data.category, options, returnHandler("NotFound", cb));
 	}
 };
 
