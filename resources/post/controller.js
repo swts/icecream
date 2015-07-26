@@ -100,7 +100,9 @@ Post.prototype.getByCategories = function(categories, options, cb) {
 	if(options.withContent) {
 		q = this.mergeNodes(q);
 	} else {
-		q = q.without("nodes");
+		q = q.merge({
+				nodes: r.row.hasFields("nodes")
+			});
 	}
 
 	q
@@ -137,9 +139,9 @@ Post.prototype.create = function (post, cb) {
 			}
 		},
 
-		function (previewIds, cb2) {
-			if(previewIds) {
-				post.preview = previewIds[0];
+		function (previewId, cb2) {
+			if(previewId.length) {
+				post.preview = previewId[0];
 			}
 
 			if(nodes) {
@@ -150,10 +152,9 @@ Post.prototype.create = function (post, cb) {
 		},
 
 		function (nodeIds, cb3) {
-			if(nodes) {
-				post.nodes = nodes;
+			if(nodeIds.length) {
+				post.nodes = nodeIds;
 			}
-
 			self.db.insert(self.box, post, function(err, result) {
 				if(err) {
 					cb3(err);
@@ -217,7 +218,7 @@ Post.prototype.filterStatus = function(query, value) {
 };
 
 Post.prototype.filterCategories = function(query, value) {
-	if(value[0] !== undefined || value[0] !== "all" || value[0] !== "everything") {
+	if(!(value[0] === "all" || value[0] === "everything" || value[0] === undefined)) {
 		var r = this.db.r;
 		return query.filter(
 			r.row("categories").contains(r.args(value))

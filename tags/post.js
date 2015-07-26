@@ -33,11 +33,11 @@ Post.prototype.render = function(context, postOrSlug, cb) {
 			options.status = "published";
 		}
 
-		this.ctrl.get(postOrSlug, options, function(err, result) {
-			if(err) {
+		this.ctrl.getBySlug(postOrSlug, options, function(err, posts) {
+			if(err || !posts) {
 				cb(null, "");
 			} else {
-				self.renderTemplate(result, cb);
+				self.renderTemplate(posts[0], cb);
 			}
 		});
 	}
