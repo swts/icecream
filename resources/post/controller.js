@@ -34,6 +34,7 @@ Post.prototype.get = function(id, options, cb) {
 		q = this.db.joinTree(q, this.categories);
 	}
 
+	q = this.filterStatus(q, options.status);
 	q = this.mergePreview(q);
 	q = this.mergeNodes(q);
 
