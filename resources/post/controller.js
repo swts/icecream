@@ -164,7 +164,7 @@ Post.prototype.create = function (post, cb) {
 
 					if(post.nodes) {
 						post.content = nodes.reduce(function(a, b, i) {
-							a[b] = nodes[i];
+							a[nodeIds[i]] = b;
 							return a;
 						}, {});
 					}
@@ -332,7 +332,7 @@ Post.prototype.createNode = function (id, index, node, cb) {
 				.run()
 				.catch(cb)
 				.then(function() {
-					cb(null, nodeIds[0]);
+					cb(null, nodeIds);
 				});
 		}
 	});

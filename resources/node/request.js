@@ -9,7 +9,7 @@ Request.prototype.unitInit = function(units) {
 
 Request.prototype.create = function() {
 	let validator = this.node.create();
-	validator.id = v.slug;
+	validator.id = v.uuid;
 	validator.index = v.opt(v.idx);
 	return validator;
 };
