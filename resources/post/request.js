@@ -42,7 +42,6 @@ Request.prototype.create = function() {
 		categories: v.opt([v.path]),
 		preview: v.opt(nodeValid),
 		published: v.opt(v.posInt),
-		nodes: v.opt([v.str]),
 		content: v.opt([nodeValid]),
 		status: v.opt(v.status)
 	};
@@ -59,7 +58,7 @@ Request.prototype.update = function() {
 			date: v.opt(v.posInt),
 			preview: v.opt(nodeValid),
 			published: v.opt(v.posInt),
-			nodes: v.opt([v.str]),
+			nodes: v.opt([v.uuid]),
 			status: v.opt(v.status)
 		}
 	};
