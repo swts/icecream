@@ -19,7 +19,7 @@ Node.prototype.create = function (auth, data, cb) {
 
 Node.prototype.update = function (auth, data, cb) {
 	let id = data.id.split("/");
-	this.ctrl.updatePreview(id[0], id[1], data.to, returnHandler("BadRequest", cb));
+	this.ctrl.updatePreview(id[0], id[1], data.to.content, returnHandler("BadRequest", cb));
 };
 
 Node.prototype.del = function (auth, data, cb) {

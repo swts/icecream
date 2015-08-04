@@ -1,19 +1,15 @@
 {
 	"name": "sweets-icecream",
 	"version": "0.6.0",
-	"description": "Sweets's posts",
+	"description": "Ordered nodes (posts, etc.)",
 	"keywords": ["future", "web", "framework", "sweets", "projects"],
 	"author": "Alexey Novikov <v@2dubs.com> (http://2dubs.com)",
-	"license" : "GPLv3",
+	"license" : "MIT",
 	"dependencies": {
 		"neo-async":	"~1.0.0",
 		"units": 		"~0.0.1",
-		"apis-return":	"~0.0.3",
+		"apis-return":	"~0.1.0",
 		"sweets-valid": "~0.0.3"
-	},
-	"engines": {
-		"node": "~0.12.0",
-		"iojs": "^1.5.0"
 	},
 	"repository": {
 		"type": "git",

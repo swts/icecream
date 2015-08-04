@@ -26,24 +26,20 @@ Post.prototype.get = function(id, options, cb) {
 		options = {};
 	}
 
-	let r = this.db.r;
+	let db = this.db;
 
-	let q = r.table(this.box).get(id);
+	let q = db.table(this.box).get(id);
 
 	if (this.categories) {
-		q = this.db.joinTree(q, this.categories);
+		q = db.joinTree(q, this.categories);
 	}
 
 	q = this.filterStatus(q, options.status);
 	q = this.mergePreview(q);
 	q = this.mergeNodes(q);
 
-	q
-		.run()
-		.catch(cb)
-		.then(function(res) {
-			cb(null, res);
-		});
+
+	db.run(q, cb);
 };
 
 Post.prototype.getBySlug = function(slug, options, cb) {
@@ -52,24 +48,19 @@ Post.prototype.getBySlug = function(slug, options, cb) {
 		options = {};
 	}
 
-	let r = this.db.r;
+	let db = this.db;
 
-	let q = r.table(this.box).getAll(slug, {index: "slug"});
+	let q = db.table(this.box).getAll(slug, {index: "slug"});
 
 	if (this.categories) {
-		q = this.db.joinTree(q, this.categories);
+		q = db.joinTree(q, this.categories);
 	}
 
 	q = this.filterStatus(q, options.status);
 	q = this.mergePreview(q);
 	q = this.mergeNodes(q);
 
-	q
-		.run()
-		.catch(cb)
-		.then(function(res) {
-			cb(null, res);
-		});
+	db.run(q, cb);
 };
 
 Post.prototype.getByCategories = function(categories, options, cb) {
@@ -78,7 +69,8 @@ Post.prototype.getByCategories = function(categories, options, cb) {
 		options = {};
 	}
 
-	let r = this.db.r;
+	let db = this.db;
+	let r = db.r;
 	let q = r.table(this.box).orderBy({
 		index: r[options.orderByOrder || "desc"](options.orderByField || "published")
 	});
@@ -93,7 +85,7 @@ Post.prototype.getByCategories = function(categories, options, cb) {
 	}
 
 	if (this.categories) {
-		q = this.db.joinTree(q, this.categories);
+		q = db.joinTree(q, this.categories);
 	}
 
 	q = this.mergePreview(q);
@@ -106,12 +98,7 @@ Post.prototype.getByCategories = function(categories, options, cb) {
 			});
 	}
 
-	q
-		.run()
-		.catch(cb)
-		.then(function(res) {
-			cb(null, res);
-		});
+	db.run(q, cb);
 };
 
 Post.prototype.create = function (post, cb) {

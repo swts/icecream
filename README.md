@@ -1,8 +1,11 @@
 # Sweets
-Next Web builder toolkit
+Flexible declarative web framework for real-time projects
 
 ## Icecream
-**Sweet for posts - entries that contain strictly ordered nodes ([see Caramel](http://github.com/swts/caramel)) and some additional attributes**
+**Ordered nodes ([see Caramel](http://github.com/swts/caramel))**
+
+
+
 
 ## Object structure
 
