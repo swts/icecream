@@ -310,10 +310,16 @@ Post.prototype.createNode = function (id, index, node, cb) {
 			r.table(self.box)
 				.get(id)
 				.replace(function(row) {
+					var nodes = r.branch(
+						row.hasFields("nodes"),
+						row("nodes"),
+						r.expr([])
+					);
+
 					return r.branch(
-						r.expr(index !== -1).and(row("nodes").count().gt(index)),
-						row.merge({nodes: row("nodes").insertAt(index, nodeIds[0])}),
-						row.merge({nodes: row("nodes").append(nodeIds[0])})
+						r.expr(index !== -1).and(nodes.count().gt(index)),
+						row.merge({nodes: nodes.insertAt(index, nodeIds[0])}),
+						row.merge({nodes: nodes.append(nodeIds[0])})
 					);
 				})
 				.run()
