@@ -39,7 +39,7 @@ Posts.prototype.render = function(context, postsOrCategory, withContent, cb) {
 			options.status = "published";
 		}
 
-		this.ctrl.getByCategory(postsOrCategory, options, function(err, result) {
+		this.ctrl.getByCategories(postsOrCategory, options, function(err, result) {
 			if(err) {
 				cb(null);
 			} else {
