@@ -20,7 +20,7 @@ Posts.prototype.renderTemplate = function(category, posts, cb) {
 	} catch(e) {
 		template = this.env.getTemplate("posts/posts.html");
 	}
-	template.render({posts: posts}, cb);
+	template.render({category: category, posts: posts}, cb);
 };
 
 Posts.prototype.render = function(context, postsOrCategory, withContent, cb) {
@@ -35,7 +35,7 @@ Posts.prototype.render = function(context, postsOrCategory, withContent, cb) {
 		let self = this,
 			options = {withContent: withContent};
 
-		if(!context.ctx.auth) {
+		if(!context.ctx.AUTH) {
 			options.status = "published";
 		}
 

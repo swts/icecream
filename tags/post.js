@@ -1,32 +1,38 @@
 "use strict";
-var Post = function(env, ctrl) {
+let Post = function(env, ctrl) {
 	this.tags = ["post"];
 	this.ctrl = ctrl;
 	this.env = env;
 };
 
 Post.prototype.parse = function(parser, nodes) {
-	var token = parser.nextToken();
-	var args = parser.parseSignature(null, true);
+	let token = parser.nextToken();
+	let args = parser.parseSignature(null, true);
 	parser.advanceAfterBlockEnd(token.value);
 	return new nodes.CallExtensionAsync(this, "render", args);
 };
 
-Post.prototype.renderTemplate = function(post, cb) {
-	var template;
+Post.prototype.renderTemplate = function(ctx, post, cb) {
+	let template;
 	try {
 		template = this.env.getTemplate("posts/" + post.slug + ".html");
 	} catch(e) {
 		template = this.env.getTemplate("posts/post.html");
 	}
-	template.render({post: post}, cb);
+
+	let data = {post: post};
+	for (var prop in ctx) {
+		data[prop] = ctx[prop];
+	}
+
+	template.render(data, cb);
 };
 
 Post.prototype.render = function(context, postOrSlug, cb) {
 	if(typeof postOrSlug !== "string") {
 		this.renderTemplate(postOrSlug, cb);
 	} else {
-		var self = this,
+		let self = this,
 			options = {};
 
 		if(!context.ctx.auth) {
@@ -37,7 +43,7 @@ Post.prototype.render = function(context, postOrSlug, cb) {
 			if(err || !posts) {
 				cb(null, "");
 			} else {
-				self.renderTemplate(posts[0], cb);
+				self.renderTemplate(context.ctx, posts[0], cb);
 			}
 		});
 	}
