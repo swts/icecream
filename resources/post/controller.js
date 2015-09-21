@@ -88,9 +88,11 @@ Post.prototype.getByCategories = function(categories, options, cb) {
     q = db.joinTree(q, this.categories);
   }
 
-  q = this.mergePreview(q);
+  if (options.preview) {
+    q = this.mergePreview(q);
+  }
 
-  if (options.withContent) {
+  if (options.content) {
     q = this.mergeNodes(q);
   } else {
     q = q.merge({
