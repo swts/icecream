@@ -23,17 +23,17 @@ Posts.prototype.renderTemplate = function(category, posts, cb) {
 	template.render({category: category, posts: posts}, cb);
 };
 
-Posts.prototype.render = function(context, postsOrCategory, withContent, cb) {
+Posts.prototype.render = function(context, postsOrCategory, content, cb) {
 	if(!cb) {
-		cb = withContent;
-		withContent = false;
+		cb = content;
+		content = false;
 	}
 
 	if(typeof postsOrCategory !== "string") {
 		this.renderTemplate(null, postsOrCategory, cb);
 	} else {
 		let self = this,
-			options = {withContent: withContent};
+			options = {content: content};
 
 		if(!context.ctx.AUTH) {
 			options.status = "published";
