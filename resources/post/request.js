@@ -8,30 +8,15 @@ Request.prototype.unitInit = function(units) {
 };
 
 Request.prototype.get = function() {
-  let vDate = v.opt(v.or(
-    v.posInt,
-    [ v.posInt ]
-  ));
-
   return v.or(
     { id: v.uuid },
     { slug: v.slug },
-    {
-      category: v.opt(v.path),
-      created: vDate,
-      published: vDate,
-      limit: v.opt(v.idx),
-      content: v.opt(v.bool),
-      preview: v.opt(v.bool)
-    },
-    {
-      categories: [ v.path ],
-      created: vDate,
-      published: vDate,
-      limit: v.opt(v.posInt),
-      content: v.opt(v.bool),
-      preview: v.opt(v.bool)
-    }
+    v.basedOn({
+      category: v.opt(v.path)
+    }, v.posts ),
+    v.basedOn({
+      categories: v.path
+    }, v.posts )
   );
 };
 

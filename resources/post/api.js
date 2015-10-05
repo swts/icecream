@@ -35,11 +35,15 @@ Post.prototype.get = function(auth, data, cb) {
 
     options.content = data.content;
     options.preview = data.preview;
+    options.author = data.author;
+    options.status = data.status;
+
     this.ctrl.getByCategories(data.categories || data.category, options, returnHandler('NotFound', cb));
   }
 };
 
 Post.prototype.create = function(auth, newPost, cb) {
+  newPost.author = auth.identity.id;
   this.ctrl.create(newPost, returnHandler('BadRequest', cb));
 };
 

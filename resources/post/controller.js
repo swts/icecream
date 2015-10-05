@@ -78,7 +78,8 @@ Post.prototype.getByCategories = function(categories, options, cb) {
   q = this.filterDates(q, 'published', options.published);
   q = this.filterDates(q, 'created', options.created);
   q = this.filterStatus(q, options.status);
-  q = this.filterCategories(q, isArray(categories) ? categories : [ categories ] );
+  q = this.filterAuthor(q, options.author);
+  q = this.filterCategories(q, categories);
 
   if (options.limit) {
     q = q.limit(options.limit);
@@ -215,7 +216,18 @@ Post.prototype.filterStatus = function(query, value) {
   return query;
 };
 
+Post.prototype.filterAuthor = function(query, value) {
+  if (value) {
+    return query.filter(this.db.r.row('author').eq(value));
+  }
+
+  return query;
+};
+
 Post.prototype.filterCategories = function(query, value) {
+  value = value === undefined ?
+    [ 'all' ] : isArray(value) ? value : [ value ]
+
   if (!(value[0] === 'all' || value[0] === 'everything' || value[0] === undefined)) {
     var r = this.db.r;
     return query.filter(
@@ -250,11 +262,12 @@ Post.prototype.mergeNodes = function(query) {
       post.hasFields('nodes'),
       {
         content: post('nodes').map(function(id) {
-            return r.expr([
-              id,
-              r.table(nodeBox).get(id).without('id')
-            ]);
-          }).coerceTo('object')
+          return r.expr([
+            id,
+            r.table(nodeBox).get(id).without('id')
+          ]);
+        })
+        .coerceTo('object')
       },
       {}
     );
