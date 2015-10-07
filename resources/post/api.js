@@ -43,7 +43,7 @@ Post.prototype.get = function(auth, data, cb) {
 };
 
 Post.prototype.create = function(auth, newPost, cb) {
-  newPost.author = auth.identity.id;
+  newPost.author = auth.identity;
   this.ctrl.create(newPost, returnHandler('BadRequest', cb));
 };
 
