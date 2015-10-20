@@ -11,6 +11,13 @@ Request.prototype.get = function() {
   return v.or(
     { id: v.uuid },
     { slug: v.slug },
+    {
+      count: v.opt(v.path),
+      author: v.opt(v.uuid),
+      created: v.opt(v.date),
+      published: v.opt(v.date),
+      status: v.opt(v.str)
+    },
     v.basedOn({
       category: v.opt(v.path)
     }, v.posts ),

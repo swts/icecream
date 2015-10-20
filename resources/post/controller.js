@@ -81,24 +81,28 @@ Post.prototype.getByCategories = function(categories, options, cb) {
   q = this.filterAuthor(q, options.author);
   q = this.filterCategories(q, categories);
 
-  if (options.limit) {
-    q = q.limit(options.limit);
-  }
-
-  if (this.categories) {
-    q = db.joinTree(q, this.categories);
-  }
-
-  if (options.preview) {
-    q = this.mergePreview(q);
-  }
-
-  if (options.content) {
-    q = this.mergeNodes(q);
+  if (options.count) {
+    q = q.count();
   } else {
-    q = q.merge({
-      nodes: r.row.hasFields('nodes')
-    });
+    if (options.limit) {
+      q = q.limit(options.limit);
+    }
+
+    if (this.categories) {
+      q = db.joinTree(q, this.categories);
+    }
+
+    if (options.preview) {
+      q = this.mergePreview(q);
+    }
+
+    if (options.content) {
+      q = this.mergeNodes(q);
+    } else {
+      q = q.merge({
+        nodes: r.row.hasFields('nodes')
+      });
+    }
   }
 
   db.run(q, cb);

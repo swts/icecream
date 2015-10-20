@@ -3,15 +3,15 @@ let valid = require('sweets-valid');
 let v = valid.validators;
 let status = v.oneOf('draft', 'ready', 'published');
 
-let vDate = v.or(
+let date = v.or(
   v.posInt,
   [ v.posInt ]
 );
 
 let posts = {
   author: v.opt(v.uuid),
-  created: v.opt(vDate),
-  published: v.opt(vDate),
+  created: v.opt(date),
+  published: v.opt(date),
   limit: v.opt(v.idx),
   content: v.opt(v.bool),
   status: v.opt(v.str),
@@ -21,6 +21,7 @@ let posts = {
 module.exports = {
   posts,
   status,
+  date,
   uuid: v.uuid,
   slug: v.slug,
   path: v.path,

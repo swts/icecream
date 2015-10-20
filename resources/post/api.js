@@ -20,26 +20,35 @@ Post.prototype.get = function(auth, data, cb) {
     this.ctrl.get(data.id, options, returnHandler('NotFound', cb));
   } else if (data.slug) {
     this.ctrl.getBySlug(data.slug, options, returnHandler('NotFound', cb));
+  } else if (data.count) {
+    options = this.getOptions(options, data);
+    options.count = true;
+    this.ctrl.getByCategories(data.count, options, returnHandler('NotFound', cb));
   } else {
-    if (data.created) {
-      options.created = data.created;
-    }
-
-    if (data.published) {
-      options.published = data.published;
-    }
-
-    if (data.limit) {
-      options.limit = data.limit;
-    }
-
-    options.content = data.content;
-    options.preview = data.preview;
-    options.author = data.author;
-    options.status = data.status;
-
+    options = this.getOptions(options, data);
     this.ctrl.getByCategories(data.categories || data.category, options, returnHandler('NotFound', cb));
   }
+};
+
+Post.prototype.getOptions = function(options, data) {
+  if (data.created) {
+    options.created = data.created;
+  }
+
+  if (data.published) {
+    options.published = data.published;
+  }
+
+  if (data.limit) {
+    options.limit = data.limit;
+  }
+
+  options.content = data.content;
+  options.preview = data.preview;
+  options.author = data.author;
+  options.status = data.status;
+
+  return options;
 };
 
 Post.prototype.create = function(auth, newPost, cb) {
