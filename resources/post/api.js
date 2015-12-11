@@ -1,5 +1,6 @@
 'use strict';
 let returnHandler = require('apis-return').handler;
+let isArray = Array.isArray;
 
 let Post = function() {};
 
@@ -10,45 +11,36 @@ Post.prototype.unitInit = function(units) {
 };
 
 Post.prototype.get = function(auth, data, cb) {
-  let options = {};
+  let options = this.getOptions(auth, data);
 
-  if (!(auth && auth.identity)) {
-    options.status = 'published';
-  }
-
-  if (data.id) {
-    this.ctrl.get(data.id, options, returnHandler('NotFound', cb));
-  } else if (data.slug) {
-    this.ctrl.getBySlug(data.slug, options, returnHandler('NotFound', cb));
-  } else if (data.count) {
-    options = this.getOptions(options, data);
+  if (options.id) {
+    this.ctrl.get(options.id, returnHandler('NotFound', cb));
+  } else if (options.slug) {
+    this.ctrl.getBySlug(options, returnHandler('NotFound', cb));
+  } else if (options.count) {
     options.count = true;
-    this.ctrl.getByCategories(data.count, options, returnHandler('NotFound', cb));
+    this.ctrl.getByCategories(options, returnHandler('NotFound', cb));
   } else {
-    options = this.getOptions(options, data);
-    this.ctrl.getByCategories(data.categories || data.category, options, returnHandler('NotFound', cb));
+    this.ctrl.getByCategories(options, returnHandler('NotFound', cb));
   }
 };
 
-Post.prototype.getOptions = function(options, data) {
-  if (data.created) {
-    options.created = data.created;
+Post.prototype.getOptions = function(auth, data) {
+  if (!auth) {
+    data.status = 'published';
+
+    let now = Date.now();
+
+    if (isArray(data.published)) {
+      if (data.published[1] === undefined || data.published[1] > now) {
+        data.published[1] = now;
+      }
+    } else if (data.published === undefined || data.published > now) {
+      data.published = now;
+    }
   }
 
-  if (data.published) {
-    options.published = data.published;
-  }
-
-  if (data.limit) {
-    options.limit = data.limit;
-  }
-
-  options.content = data.content;
-  options.preview = data.preview;
-  options.author = data.author;
-  options.status = data.status;
-
-  return options;
+  return data;
 };
 
 Post.prototype.create = function(auth, newPost, cb) {

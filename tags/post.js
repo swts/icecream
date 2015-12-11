@@ -16,7 +16,7 @@ Post.prototype.renderTemplate = function(ctx, post, cb) {
   let template;
   try {
     template = this.env.getTemplate('posts/' + post.slug + '.html');
-  } catch(e) {
+  } catch (e) {
     template = this.env.getTemplate('posts/post.html');
   }
 
@@ -37,9 +37,10 @@ Post.prototype.render = function(context, postOrSlug, cb) {
 
     if (!context.ctx.auth) {
       options.status = 'published';
+      options.slug = postOrSlug;
     }
 
-    this.ctrl.getBySlug(postOrSlug, options, function(err, posts) {
+    this.ctrl.getBySlug(options, function(err, posts) {
       if (err || !posts) {
         cb(null, '');
       } else {

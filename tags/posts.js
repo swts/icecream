@@ -1,52 +1,57 @@
-"use strict";
+'use strict';
+let isArray = [].isArray;
+
 let Posts = function(env, ctrl) {
-	this.tags = ["posts"];
-	this.ctrl = ctrl;
-	this.env = env;
+  this.tags = [ 'posts' ];
+  this.ctrl = ctrl;
+  this.env = env;
 };
 
 Posts.prototype.parse = function(parser, nodes) {
-	let token = parser.nextToken();
-	let args = parser.parseSignature(null, true);
-	parser.advanceAfterBlockEnd(token.value);
-	return new nodes.CallExtensionAsync(this, "render", args);
+  let token = parser.nextToken();
+  let args = parser.parseSignature(null, true);
+  parser.advanceAfterBlockEnd(token.value);
+  return new nodes.CallExtensionAsync(this, 'render', args);
 };
 
 
 Posts.prototype.renderTemplate = function(category, posts, cb) {
-	let template;
-	try {
-		template = this.env.getTemplate("posts/category-" + category + ".html");
-	} catch(e) {
-		template = this.env.getTemplate("posts/posts.html");
-	}
-	template.render({category: category, posts: posts}, cb);
+  let template;
+  try {
+    template = this.env.getTemplate('posts/category-' + category + '.html');
+  } catch (e) {
+    template = this.env.getTemplate('posts/posts.html');
+  }
+  template.render({ category: category, posts: posts }, cb);
 };
 
 Posts.prototype.render = function(context, postsOrCategory, content, cb) {
-	if(!cb) {
-		cb = content;
-		content = false;
-	}
+  if (!cb) {
+    cb = content;
+    content = false;
+  }
 
-	if(typeof postsOrCategory !== "string") {
-		this.renderTemplate(null, postsOrCategory, cb);
-	} else {
-		let self = this,
-			options = {content: content};
+  if (typeof postsOrCategory !== 'string') {
+    this.renderTemplate(null, postsOrCategory, cb);
+  } else {
+    let self = this;
+    let options = {
+      content: content,
+      categories: isArray(postsOrCategory) ? postsOrCategory : [ postsOrCategory ]
+    };
 
-		if(!context.ctx.AUTH) {
-			options.status = "published";
-		}
+    if (!context.ctx.AUTH) {
+      options.status = 'published';
+    }
 
-		this.ctrl.getByCategories(postsOrCategory, options, function(err, result) {
-			if(err) {
-				cb(null);
-			} else {
-				self.renderTemplate(postsOrCategory, result, cb);
-			}
-		});
-	}
+    this.ctrl.getByCategories(options, function(err, result) {
+      if (err) {
+        cb(null);
+      } else {
+        self.renderTemplate(postsOrCategory, result, cb);
+      }
+    });
+  }
 };
 
 

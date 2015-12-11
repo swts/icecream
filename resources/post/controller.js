@@ -20,12 +20,7 @@ Post.prototype.unitInit = function(units) {
   }
 };
 
-Post.prototype.get = function(id, options, cb) {
-  if (cb === undefined) {
-    cb = options;
-    options = {};
-  }
-
+Post.prototype.get = function(id, cb) {
   let db = this.db;
 
   let q = db.table(this.box).get(id);
@@ -34,23 +29,16 @@ Post.prototype.get = function(id, options, cb) {
     q = db.joinTree(q, this.categories);
   }
 
-  q = this.filterStatus(q, options.status);
   q = this.mergePreview(q);
   q = this.mergeNodes(q);
-
 
   db.run(q, cb);
 };
 
-Post.prototype.getBySlug = function(slug, options, cb) {
-  if (cb === undefined) {
-    cb = options;
-    options = {};
-  }
-
+Post.prototype.getBySlug = function(options, cb) {
   let db = this.db;
 
-  let q = db.table(this.box).getAll(slug, { index: 'slug' });
+  let q = db.table(this.box).getAll(options.slug, { index: 'slug' });
 
   if (this.categories) {
     q = db.joinTree(q, this.categories);
@@ -63,12 +51,7 @@ Post.prototype.getBySlug = function(slug, options, cb) {
   db.run(q, cb);
 };
 
-Post.prototype.getByCategories = function(categories, options, cb) {
-  if (cb === undefined) {
-    cb = options;
-    options = {};
-  }
-
+Post.prototype.getByCategories = function(options, cb) {
   let db = this.db;
   let r = db.r;
   let q = r.table(this.box).orderBy({
@@ -79,7 +62,7 @@ Post.prototype.getByCategories = function(categories, options, cb) {
   q = this.filterDates(q, 'created', options.created);
   q = this.filterStatus(q, options.status);
   q = this.filterAuthor(q, options.author);
-  q = this.filterCategories(q, categories);
+  q = this.filterCategories(q, options.categories || options.category);
 
   if (options.count) {
     q = q.count();
@@ -232,7 +215,7 @@ Post.prototype.filterCategories = function(query, value) {
   value = value === undefined ?
     [ 'all' ] : isArray(value) ? value : [ value ]
 
-  if (!(value[0] === 'all' || value[0] === 'everything' || value[0] === undefined)) {
+  if (!(value[0] === 'all' || value[0] === 'everything')) {
     var r = this.db.r;
     return query.filter(
       r.row('categories').contains(r.args(value))
