@@ -1,29 +1,33 @@
 'use strict';
-let async = require('neo-async');
-
+let Promise = require('bluebird');
 let isArray = Array.isArray;
 
 let Post = function() {
   this.db = null;
 };
 
-Post.prototype.box = 'posts';
-Post.prototype.scheme = { indexes: [ 'slug', 'created', 'published' ] };
-
-Post.prototype.unitInit = function(units) {
-  this.db = units.require('db');
-  this.nodeCtrl = units.require('resources.node.controller');
-
-  let categories = units.require('core.settings').categories;
-  if (categories) {
-    this.categories = categories[this.box];
+Post.prototype.scheme = {
+  post: {
+    table: 'posts',
+    indexes: [ 'slug', 'created', 'published' ]
   }
 };
 
-Post.prototype.get = function(id, cb) {
+Post.prototype.unitInit = function(units) {
+  this.db = units.require('db');
+  this.table = this.scheme.post.table;
+
+  this.nodeCtrl = units.require('resources.node.controller');
+  let categories = units.require('core.settings').categories;
+  if (categories) {
+    this.categories = categories[this.table];
+  }
+};
+
+Post.prototype.get = function(id) {
   let db = this.db;
 
-  let q = db.table(this.box).get(id);
+  let q = db.table(this.table).get(id);
 
   if (this.categories) {
     q = db.joinTree(q, this.categories);
@@ -32,13 +36,13 @@ Post.prototype.get = function(id, cb) {
   q = this.mergePreview(q);
   q = this.mergeNodes(q);
 
-  db.run(q, cb);
+  return q.run();
 };
 
-Post.prototype.getBySlug = function(options, cb) {
+Post.prototype.getBySlug = function(options) {
   let db = this.db;
 
-  let q = db.table(this.box).getAll(options.slug, { index: 'slug' });
+  let q = db.table(this.table).getAll(options.slug, { index: 'slug' });
 
   if (this.categories) {
     q = db.joinTree(q, this.categories);
@@ -48,13 +52,13 @@ Post.prototype.getBySlug = function(options, cb) {
   q = this.mergePreview(q);
   q = this.mergeNodes(q);
 
-  db.run(q, cb);
+  return q.run();
 };
 
-Post.prototype.getByCategories = function(options, cb) {
+Post.prototype.getByCategories = function(options) {
   let db = this.db;
   let r = db.r;
-  let q = r.table(this.box).orderBy({
+  let q = r.table(this.table).orderBy({
     index: r[options.orderByOrder || 'desc'](options.orderByField || 'published')
   });
 
@@ -62,9 +66,9 @@ Post.prototype.getByCategories = function(options, cb) {
   q = this.filterDates(q, 'created', options.created);
   q = this.filterStatus(q, options.status);
   q = this.filterAuthor(q, options.author);
-  q = this.filterCategories(q, options.categories || options.category);
+  q = this.filterCategories(q, options.categories);
 
-  if (options.count) {
+  if (options.quantity) {
     q = q.count();
   } else {
     if (options.limit) {
@@ -88,20 +92,21 @@ Post.prototype.getByCategories = function(options, cb) {
     }
   }
 
-  db.run(q, cb);
+  return q.run();
 };
 
-Post.prototype.create = function(post, cb) {
-  let self = this;
+Post.prototype.create = function(post) {
   let nodes;
   let preview;
 
   if (!post.status) {
     post.status = 'draft';
   }
+
   if (!post.created) {
     post.created = Date.now();
   }
+
   if (!post.published) {
     post.published = post.created;
   }
@@ -116,63 +121,48 @@ Post.prototype.create = function(post, cb) {
     delete post.content;
   }
 
-  async.waterfall([
-    function(cb1) {
+  return Promise.resolve(preview)
+    .then(preview => preview ? this.nodeCtrl.create(preview) : [])
+    .then(ids => {
+      if (ids.length) {
+        post.preview = ids[0];
+      }
+
+      return nodes ? this.nodeCtrl.create(nodes) : [];
+    })
+    .then(ids => {
+      if (ids.length) {
+        post.nodes = ids;
+      }
+
+      return this.db.insert(this.table, post);
+    })
+    .then(ids => {
+      post.id = ids[0];
+
+      if (post.nodes) {
+        post.content = nodes.reduce(function(a, b, i) {
+          a[post.nodes[i]] = b;
+          return a;
+        }, {});
+      }
+
       if (preview) {
-        self.db.insert(self.nodeCtrl.box, preview, cb1);
-      } else {
-        cb1(null, []);
-      }
-    },
-
-    function(previewId, cb2) {
-      if (previewId.length) {
-        post.preview = previewId[0];
+        preview.id = post.preview;
+        post.preview = preview;
       }
 
-      if (nodes) {
-        self.db.insert(self.nodeCtrl.box, nodes, cb2);
-      } else {
-        cb2(null, []);
-      }
-    },
-
-    function(nodeIds, cb3) {
-      if (nodeIds.length) {
-        post.nodes = nodeIds;
-      }
-      self.db.insert(self.box, post, function(err, result) {
-        if (err) {
-          cb3(err);
-        } else {
-          post.id = result[0];
-
-          if (post.nodes) {
-            post.content = nodes.reduce(function(a, b, i) {
-              a[nodeIds[i]] = b;
-              return a;
-            }, {});
-          }
-
-          if (preview) {
-            preview.id = post.preview;
-            post.preview = preview;
-          }
-
-          cb3(null, post);
-        }
-      });
-    }
-  ], cb);
+      return post;
+    });
 };
 
-Post.prototype.update = function(id, to, cb) {
-  this.db.update(this.box, id, to, cb);
+Post.prototype.update = function(id, to) {
+  return this.db.update(this.table, id, to);
 };
 
-Post.prototype.remove = function(id, cb) {
-  // remove nodes or not? probably yes
-  this.db.remove(this.box, id, cb);
+Post.prototype.delete = function(id) {
+  // delete nodes or not? probably yes
+  return this.db.delete(this.table, id);
 };
 
 //filters
@@ -227,146 +217,102 @@ Post.prototype.filterCategories = function(query, value) {
 
 Post.prototype.mergePreview = function(query) {
   let r = this.db.r;
-  let nodeBox = this.nodeCtrl.box;
+  let nodeBox = this.nodeCtrl.table;
 
-  return query.merge(function(post) {
-    return r.branch(
-      post.hasFields('preview'),
-      {
-        preview: r.table(nodeBox).get(post('preview'))
-      },
-      {}
-    );
-  });
+  return query.merge(post => r.branch(
+    post.hasFields('preview'),
+    { preview: r.table(nodeBox).get(post('preview')) },
+    {}
+  ));
 };
 
 Post.prototype.mergeNodes = function(query) {
   let r = this.db.r;
-  let nodeBox = this.nodeCtrl.box;
+  let nodeTable = this.nodeCtrl.table;
 
-  return query.merge(function(post) {
-    return r.branch(
-      post.hasFields('nodes'),
-      {
-        content: post('nodes').map(function(id) {
-          return r.expr([
-            id,
-            r.table(nodeBox).get(id).without('id')
-          ]);
-        })
+  return query.merge(post => r.branch(
+    post.hasFields('nodes'),
+    {
+      content: post('nodes')
+        .map(id => r.expr([ id, r.table(nodeTable).get(id).without('id') ]))
         .coerceTo('object')
-      },
-      {}
-    );
-  });
+    },
+    {}
+  ));
 };
 
 //nodes
-Post.prototype.createPreview = function(id, node, cb) {
-  let self = this;
-  let r = self.db.r;
-
-  this.nodeCtrl.create(node, function(err, nodeIds) {
-    if (err) {
-      cb(err, null);
-    } else {
-      r.table(self.box)
-        .get(id)
-        .replace( r.row.merge({ preview: nodeIds[0] }) )
-        .run()
-        .catch(cb)
-        .then(function() {
-          cb(null, nodeIds[0]);
-        });
-    }
-  });
-};
-
-Post.prototype.updatePreview = function(id, nodeId, to, cb) {
-  this.nodeCtrl.update(nodeId, to, cb);
-};
-
-Post.prototype.removePreview = function(id, nodeId, cb) {
-  let self = this;
+Post.prototype.addPreview = function(id, node) {
   let r = this.db.r;
 
-  this.nodeCtrl.remove(id, function(err) {
-    if (err) {
-      cb(err, null);
-    } else {
-      r.table(self.box)
-        .get(id)
-        .replace( r.row.without('preview') )
-        .run()
-        .catch(cb)
-        .then(function(res) {
-          cb(null, res);
-        });
-    }
-  });
+  return this.nodeCtrl.create(node)
+    .then(ids => r.table(this.table)
+      .get(id)
+      .replace( r.row.merge({ preview: ids[0] }) )
+      .run()
+      .then(() => ids[0])
+    );
+};
+
+Post.prototype.updatePreview = function(id, to) {
+  return this.nodeCtrl.update(id, to);
+};
+
+Post.prototype.removePreview = function(id, nodeId) {
+  let r = this.db.r;
+
+  return this.nodeCtrl.delete(nodeId)
+    .then(() => r.table(this.table)
+      .get(id)
+      .replace( r.row.without('preview') )
+      .run()
+      .then(() => id)
+    );
 };
 
 //nodes
-Post.prototype.createNode = function(id, index, node, cb) {
-  let self = this;
-  let r = self.db.r;
+Post.prototype.addNode = function(id, index, node) {
+  let r = this.db.r;
 
   if (index === undefined) {
     index = -1;
   }
 
-  this.nodeCtrl.create(node, function(err, nodeIds) {
-    if (err) {
-      cb(err, null);
-    } else {
-      r.table(self.box)
-        .get(id)
-        .replace(function(row) {
-          var nodes = r.branch(
-            row.hasFields('nodes'),
-            row('nodes'),
-            r.expr([])
-          );
+  return this.nodeCtrl.create(node)
+    .then(ids => r.table(this.table)
+      .get(id)
+      .replace(function(row) {
+        var nodes = r.branch(
+          row.hasFields('nodes'),
+          row('nodes'),
+          r.expr([])
+        );
 
-          return r.branch(
-            r.expr(index !== -1).and(nodes.count().gt(index)),
-            row.merge({ nodes: nodes.insertAt(index, nodeIds[0]) }),
-            row.merge({ nodes: nodes.append(nodeIds[0]) })
-          );
-        })
-        .run()
-        .catch(cb)
-        .then(function() {
-          cb(null, nodeIds);
-        });
-    }
-  });
+        return r.branch(
+          r.expr(index !== -1).and(nodes.count().gt(index)),
+          row.merge({ nodes: nodes.insertAt(index, ids[0]) }),
+          row.merge({ nodes: nodes.append(ids[0]) })
+        );
+      })
+      .run()
+      .then(() => ids[0])
+  );
 };
 
-Post.prototype.updateNode = function(id, nodeId, to, cb) {
-  this.nodeCtrl.update(nodeId, to, cb);
+Post.prototype.updateNode = function(id, to) {
+  return this.nodeCtrl.update(id, to);
 };
 
-Post.prototype.removeNode = function(id, nodeId, cb) {
-  let self = this;
+Post.prototype.removeNode = function(id, nodeId) {
   let r = this.db.r;
 
-  this.nodeCtrl.remove(nodeId, function(err) {
-    if (err) {
-      cb(err, null);
-    } else {
-      r.table(self.box)
-        .get(id)
-        .replace( function(row) {
-          return row.merge({ nodes: row('nodes').setDifference([ nodeId ]) });
-        })
-        .run()
-        .catch(cb)
-        .then(function(res) {
-          cb(null, res);
-        });
-    }
-  });
+  return this.nodeCtrl.remove(nodeId)
+    .then(() => r.table(this.table)
+      .get(id)
+      .replace(row => row.merge({ nodes: row('nodes').setDifference([ nodeId ]) }) )
+      .run()
+      .then(() => nodeId)
+    );
 };
 
 module.exports = Post;

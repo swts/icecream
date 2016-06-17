@@ -12,7 +12,7 @@ Post.prototype.parse = function(parser, nodes) {
   return new nodes.CallExtensionAsync(this, 'render', args);
 };
 
-Post.prototype.renderTemplate = function(ctx, post, cb) {
+Post.prototype.renderTemplate = function(post, cb) {
   let template;
   try {
     template = this.env.getTemplate('posts/' + post.slug + '.html');
@@ -20,19 +20,13 @@ Post.prototype.renderTemplate = function(ctx, post, cb) {
     template = this.env.getTemplate('posts/post.html');
   }
 
-  let data = { post: post };
-  for (var prop in ctx) {
-    data[prop] = ctx[prop];
-  }
-
-  template.render(data, cb);
+  template.render({ post }, cb);
 };
 
 Post.prototype.render = function(context, postOrSlug, cb) {
   if (typeof postOrSlug !== 'string') {
     this.renderTemplate(postOrSlug, cb);
   } else {
-    let self = this;
     let options = {};
 
     if (!context.ctx.auth) {
@@ -40,13 +34,15 @@ Post.prototype.render = function(context, postOrSlug, cb) {
       options.slug = postOrSlug;
     }
 
-    this.ctrl.getBySlug(options, function(err, posts) {
-      if (err || !posts) {
-        cb(null, '');
-      } else {
-        self.renderTemplate(context.ctx, posts[0], cb);
-      }
-    });
+    this.ctrl
+      .getBySlug(options)
+      .asCallback((err, posts) => {
+        if (err || !posts) {
+          cb(null, '');
+        } else {
+          this.renderTemplate(posts[0], cb);
+        }
+      });
   }
 };
 
