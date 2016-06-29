@@ -29,38 +29,24 @@ Post.prototype.get = function(id) {
 
   let q = db.table(this.table).get(id);
 
-  if (this.categories) {
-    q = db.joinTree(q, this.categories);
-  }
-
   q = this.mergePreview(q);
   q = this.mergeNodes(q);
 
   return q.run();
 };
 
-Post.prototype.getBySlug = function(options) {
-  let db = this.db;
-
-  let q = db.table(this.table).getAll(options.slug, { index: 'slug' });
-
-  if (this.categories) {
-    q = db.joinTree(q, this.categories);
-  }
-
-  q = this.filterStatus(q, options.status);
-  q = this.mergePreview(q);
-  q = this.mergeNodes(q);
-
-  return q.run();
-};
-
-Post.prototype.getByCategories = function(options) {
+Post.prototype.getAll = function(options) {
   let db = this.db;
   let r = db.r;
-  let q = r.table(this.table).orderBy({
-    index: r[options.orderByOrder || 'desc'](options.orderByField || 'published')
-  });
+  let q = r.table(this.table);
+
+  if (options.slug) {
+    q = q.getAll(options.slug, { index: 'slug' }).orderBy(r[options.orderByOrder || 'desc'](options.orderByField || 'published'))
+  } else {
+    q = q.orderBy({
+      index: r[options.orderByOrder || 'desc'](options.orderByField || 'published')
+    });
+  }
 
   q = this.filterDates(q, 'published', options.published);
   q = this.filterDates(q, 'created', options.created);
@@ -73,10 +59,6 @@ Post.prototype.getByCategories = function(options) {
   } else {
     if (options.limit) {
       q = q.limit(options.limit);
-    }
-
-    if (this.categories) {
-      q = db.joinTree(q, this.categories);
     }
 
     if (options.preview) {

@@ -13,7 +13,7 @@ Api.prototype.unitInit = function(units) {
 };
 
 Api.prototype.calls = [
-  'get', 'getBySlug', 'getByCategories',
+  'get', 'getBySlug', 'getAll',
   'create', 'update', 'delete',
   'addNode', 'updateNode', 'removeNode',
   'addPreview', 'updatePreview', 'removePreview'
@@ -90,7 +90,7 @@ Api.prototype.getBySlug = function(auth, data, cb) {
     .asCallback(mmhandler('NotFound', cb));
 };
 
-Api.prototype.getByCategoriesSchema = function() {
+Api.prototype.getAllSchema = function() {
   return {
     auth: {
       provider: 'user',
@@ -131,9 +131,9 @@ Api.prototype.getByCategoriesSchema = function() {
   }
 };
 
-Api.prototype.getByCategories = function(auth, data, cb) {
+Api.prototype.getAll = function(auth, data, cb) {
   this.ctrl
-    .getByCategories( this.getOptions(auth, data) )
+    .getAll( this.getOptions(auth, data) )
     .asCallback(mmhandler('NotFound', cb));
 };
 

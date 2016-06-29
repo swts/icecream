@@ -3,7 +3,7 @@
 const slug = function(low) {
   return {
     type: 'string',
-    pattern: '^[-a-z0-9_]{' + (low || 4) + ',60}$'
+    pattern: '^[-a-z0-9_]{' + (low || 1) + ',60}$'
   }
 };
 

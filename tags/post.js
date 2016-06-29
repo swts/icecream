@@ -27,15 +27,18 @@ Post.prototype.render = function(context, postOrSlug, cb) {
   if (typeof postOrSlug !== 'string') {
     this.renderTemplate(postOrSlug, cb);
   } else {
-    let options = {};
+    let options = {
+      slug: postOrSlug,
+      preview: true,
+      content: true
+    };
 
     if (!context.ctx.auth) {
       options.status = 'published';
-      options.slug = postOrSlug;
     }
 
     this.ctrl
-      .getBySlug(options)
+      .getAll(options)
       .asCallback((err, posts) => {
         if (err || !posts) {
           cb(null, '');
