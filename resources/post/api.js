@@ -15,8 +15,8 @@ Api.prototype.unitInit = function(units) {
 Api.prototype.calls = [
   'get', 'getBySlug', 'getAll',
   'create', 'update', 'delete',
-  'addNode', 'updateNode', 'removeNode',
-  'addPreview', 'updatePreview', 'removePreview'
+  'addNode', 'updateNode', 'deleteNode',
+  'addPreview', 'updatePreview', 'deletePreview'
 ];
 
 Api.prototype.getOptions = function(auth, data) {
@@ -264,30 +264,35 @@ Api.prototype.delete = function(auth, data, cb) {
 
 //nodes
 Api.prototype.addNodeSchema = function() {
-  let schema = this.node.createSchema();
-
-  schema.request.required.push('post');
-  schema.request.properties.post = {
-    type: 'string',
-    format: 'uuid'
+  return {
+    auth: {
+      provider: 'user',
+      required: true
+    },
+    title: 'Post',
+    description: 'Creates a post',
+    request: {
+      type: 'object',
+      additionalProperties: false,
+      required: [ 'id', 'node' ],
+      properties: {
+        id: {
+          type: 'string',
+          format: 'uuid'
+        },
+        index: {
+          type: 'integer',
+          minimum: 0
+        },
+        node: this.node.createSchema().request
+      }
+    }
   };
-
-  schema.request.properties.index = {
-    type: 'integer',
-    minimum: 0
-  }
-
-  return schema;
 };
 
 Api.prototype.addNode = function(auth, data, cb) {
-  const post = data.post;
-  const index = data.index;
-
-  delete data.post;
-  delete data.index;
   this.ctrl
-    .addNode(post, data, index)
+    .addNode(data.id, data.node, data.index)
     .asCallback(mmhandler('BadRequest', cb));
 };
 
@@ -301,21 +306,35 @@ Api.prototype.updateNode = function(auth, data, cb) {
     .asCallback(mmhandler('BadRequest', cb));
 };
 
-Api.prototype.removeNodeSchema = function() {
-  let schema = this.node.deleteSchema();
-
-  schema.request.required.push('post');
-  schema.request.properties.post = {
-    type: 'string',
-    format: 'uuid'
+Api.prototype.deleteNodeSchema = function() {
+  return {
+    auth: {
+      provider: 'user',
+      required: true
+    },
+    title: 'Post',
+    description: 'Creates a post',
+    request: {
+      type: 'object',
+      additionalProperties: false,
+      required: [ 'id', 'node' ],
+      properties: {
+        id: {
+          type: 'string',
+          format: 'uuid'
+        },
+        node: {
+          type: 'string',
+          format: 'uuid'
+        }
+      }
+    }
   };
-
-  return schema;
 };
 
-Api.prototype.removeNode = function(auth, data, cb) {
+Api.prototype.deleteNode = function(auth, data, cb) {
   this.ctrl
-    .removeNode(data.post, data.id)
+    .deleteNode(data.id, data.node)
     .asCallback(mmhandler('NotFound', cb));
 };
 
@@ -327,11 +346,8 @@ Api.prototype.addPreviewSchema = function() {
 };
 
 Api.prototype.addPreview = function(auth, data, cb) {
-  const post = data.post;
-  delete data.post;
-
   this.ctrl
-    .addPreivew(post, data)
+    .addPreivew(data.id, data.node)
     .asCallback(mmhandler('BadRequest', cb));
 };
 
@@ -345,13 +361,13 @@ Api.prototype.updatePreview = function(auth, data, cb) {
     .asCallback(mmhandler('BadRequest', cb));
 };
 
-Api.prototype.removePreviewSchema = function() {
-  return this.removeNodeSchema();
+Api.prototype.deletePreviewSchema = function() {
+  return this.deleteNodeSchema();
 };
 
-Api.prototype.removePreview = function(auth, data, cb) {
+Api.prototype.deletePreview = function(auth, data, cb) {
   this.ctrl
-    .removePreview(data.post, data.id)
+    .deletePreview(data.id, data.node)
     .asCallback(mmhandler('NotFound', cb));
 };
 

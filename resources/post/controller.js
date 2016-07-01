@@ -240,7 +240,7 @@ Post.prototype.updatePreview = function(id, to) {
   return this.nodeCtrl.update(id, to);
 };
 
-Post.prototype.removePreview = function(id, nodeId) {
+Post.prototype.deletePreview = function(id, nodeId) {
   let r = this.db.r;
 
   return this.nodeCtrl.delete(nodeId)
@@ -253,7 +253,7 @@ Post.prototype.removePreview = function(id, nodeId) {
 };
 
 //nodes
-Post.prototype.addNode = function(id, index, node) {
+Post.prototype.addNode = function(id, node, index) {
   let r = this.db.r;
 
   if (index === undefined) {
@@ -277,7 +277,7 @@ Post.prototype.addNode = function(id, index, node) {
         );
       })
       .run()
-      .then(() => ids[0])
+      .then(() => ids)
   );
 };
 
@@ -285,10 +285,10 @@ Post.prototype.updateNode = function(id, to) {
   return this.nodeCtrl.update(id, to);
 };
 
-Post.prototype.removeNode = function(id, nodeId) {
+Post.prototype.deleteNode = function(id, nodeId) {
   let r = this.db.r;
 
-  return this.nodeCtrl.remove(nodeId)
+  return this.nodeCtrl.delete(nodeId)
     .then(() => r.table(this.table)
       .get(id)
       .replace(row => row.merge({ nodes: row('nodes').setDifference([ nodeId ]) }) )
