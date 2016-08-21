@@ -9,7 +9,7 @@ let Post = function() {
 Post.prototype.scheme = {
   post: {
     table: 'posts',
-    indexes: [ 'slug', 'created', 'published' ]
+    indexes: [ 'slug', 'author', 'created', 'published' ]
   }
 };
 
@@ -35,37 +35,41 @@ Post.prototype.get = function(id) {
   return q.run();
 };
 
-Post.prototype.getAll = function(options) {
+Post.prototype.getAll = function(opts) {
+  return this._getAll(opts).run();
+};
+
+Post.prototype._getAll = function(opts) {
   let db = this.db;
   let r = db.r;
   let q = r.table(this.table);
 
-  if (options.slug) {
-    q = q.getAll(options.slug, { index: 'slug' }).orderBy(r[options.orderByOrder || 'desc'](options.orderByField || 'published'))
+  if (opts.slug) {
+    q = q.getAll(opts.slug, { index: 'slug' }).orderBy(r[opts.orderByOrder || 'desc'](opts.orderByField || 'published'))
   } else {
     q = q.orderBy({
-      index: r[options.orderByOrder || 'desc'](options.orderByField || 'published')
+      index: r[opts.orderByOrder || 'desc'](opts.orderByField || 'published')
     });
   }
 
-  q = this.filterDates(q, 'published', options.published);
-  q = this.filterDates(q, 'created', options.created);
-  q = this.filterStatus(q, options.status);
-  q = this.filterAuthor(q, options.author);
-  q = this.filterCategories(q, options.categories);
+  q = this.filterDates(q, 'published', opts.published);
+  q = this.filterDates(q, 'created', opts.created);
+  q = this.filterStatus(q, opts.status);
+  q = this.filterAuthor(q, opts.author);
+  q = this.filterCategories(q, opts.categories);
 
-  if (options.quantity) {
+  if (opts.quantity) {
     q = q.count();
   } else {
-    if (options.limit) {
-      q = q.limit(options.limit);
+    if (opts.limit) {
+      q = q.limit(opts.limit);
     }
 
-    if (options.preview) {
+    if (opts.preview) {
       q = this.mergePreview(q);
     }
 
-    if (options.content) {
+    if (opts.content) {
       q = this.mergeNodes(q);
     } else {
       q = q.merge({
@@ -74,7 +78,7 @@ Post.prototype.getAll = function(options) {
     }
   }
 
-  return q.run();
+  return q;
 };
 
 Post.prototype.create = function(post) {

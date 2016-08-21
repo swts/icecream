@@ -13,7 +13,7 @@ Api.prototype.unitInit = function(units) {
 };
 
 Api.prototype.calls = [
-  'get', 'getBySlug', 'getAll',
+  'get', 'getAll',
   'create', 'update', 'delete',
   'addNode', 'updateNode', 'deleteNode',
   'addPreview', 'updatePreview', 'deletePreview'
@@ -65,31 +65,6 @@ Api.prototype.get = function(auth, data, cb) {
     .asCallback(mmhandler('NotFound', cb));
 };
 
-Api.prototype.getBySlugSchema = function() {
-  return {
-    auth: {
-      provider: 'user',
-      required: 'optional'
-    },
-    title: 'Post',
-    description: 'Returns a post',
-    request: {
-      type: 'object',
-      additionalProperties: false,
-      required: [ 'slug' ],
-      properties: {
-        slug: types.slug()
-      }
-    }
-  }
-};
-
-Api.prototype.getBySlug = function(auth, data, cb) {
-  this.ctrl
-    .getBySlug( this.getOptions(auth, data) )
-    .asCallback(mmhandler('NotFound', cb));
-};
-
 Api.prototype.getAllSchema = function() {
   return {
     auth: {
@@ -122,6 +97,9 @@ Api.prototype.getAllSchema = function() {
         preview: {
           type: 'boolean'
         },
+
+        slug: types.slug(),
+
         categories: {
           type: 'array',
           items: types.slug()
