@@ -143,7 +143,14 @@ Post.prototype.create = function(post) {
 };
 
 Post.prototype.update = function(id, to) {
-  return this.db.update(this.table, id, to);
+  return this.db
+    .update(this.table, id, to)
+    .then(res => {
+      if (this.published && res.replaced && to.status && to.status === 'published') {
+        return this.published(id);
+      }
+    })
+    .then(() => id);
 };
 
 Post.prototype.delete = function(id) {
