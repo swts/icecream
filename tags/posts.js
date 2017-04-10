@@ -1,5 +1,5 @@
 'use strict';
-let isArray = [].isArray;
+let isArray = Array.isArray;
 
 let Posts = function(env, ctrl) {
   this.tags = [ 'posts' ];
@@ -25,33 +25,30 @@ Posts.prototype.renderTemplate = function(category, posts, cb) {
   template.render({ category: category, posts: posts }, cb);
 };
 
-Posts.prototype.render = function(context, postsOrCategory, content, cb) {
+Posts.prototype.render = function(context, postsOrCategory, preview = false, content = false, cb) {
   if (!cb) {
     cb = content;
     content = false;
   }
 
   if (typeof postsOrCategory !== 'string') {
-    this.renderTemplate(null, postsOrCategory, cb);
-  } else {
-    let self = this;
-    let options = {
-      content: content,
-      categories: isArray(postsOrCategory) ? postsOrCategory : [ postsOrCategory ]
-    };
-
-    if (!context.ctx.AUTH) {
-      options.status = 'published';
-    }
-
-    this.ctrl.getAll(options, function(err, result) {
-      if (err) {
-        cb(null);
-      } else {
-        self.renderTemplate(postsOrCategory, result, cb);
-      }
-    });
+    return this.renderTemplate(null, postsOrCategory, cb);
   }
+
+  let options = {
+    content: content,
+    preview: preview,
+    categories: isArray(postsOrCategory) ? postsOrCategory : [ postsOrCategory ]
+  };
+
+  if (!context.ctx.AUTH) {
+    options.status = 'published';
+  }
+
+  this.ctrl
+    .getAll(options)
+    .catch(() => cb(null))
+    .then(result => this.renderTemplate(postsOrCategory, result, cb));
 };
 
 
