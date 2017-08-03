@@ -1,8 +1,8 @@
 'use strict';
-let Promise = require('bluebird');
-let isArray = Array.isArray;
+const Promise = require('bluebird');
+const isArray = Array.isArray;
 
-let Post = function() {
+const Post = function() {
   this.db = null;
 };
 
@@ -13,7 +13,7 @@ Post.prototype.scheme = {
   }
 };
 
-Post.prototype.unitInit = function(units) {
+Post.prototype.__init = function(units) {
   this.db = units.require('db');
   this.table = this.scheme.post.table;
 

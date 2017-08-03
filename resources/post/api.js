@@ -1,13 +1,13 @@
 'use strict';
-const mmhandler = require('mmp-errors').handler;
+const mmhandler = require('mm-errors').handler;
 const types = require('../types');
 const isArray = Array.isArray;
 
-let Api = function() {
+const Api = function() {
   this.ctrl = undefined;
 };
 
-Api.prototype.unitInit = function(units) {
+Api.prototype.__init = function(units) {
   this.ctrl = units.require('controller');
   this.node = units.require('resources.node.api');
 };

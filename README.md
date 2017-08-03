@@ -1,10 +1,1 @@
-# Sweets
-Flexible declarative web framework for real-time projects
-
-## Icecream
-**Ordered nodes ([see Caramel](http://github.com/swts/caramel))**
-
-Docs are coming soon.
-
-## License
-MIT License
+**Discontinued! Check [Matter In Motion](https://github.com/matter-in-motion/mm) framework.**

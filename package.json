@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.4.0",
-    "mmp-errors": "^0.8.0"
+    "mm-errors": "^1.0.0"
   },
   "repository": {
     "type": "git",
